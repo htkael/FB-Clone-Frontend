@@ -5,7 +5,6 @@ import { z } from "zod";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Define the validation schema
 const signupSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
@@ -33,10 +32,11 @@ const signupSchema = z
   });
 
 function Signup() {
-  const { signup } = useAuth();
+  const { signup, guestLogin } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -52,11 +52,9 @@ function Signup() {
     setApiError("");
     setIsSubmitting(true);
     try {
-      // Remove password_conf before sending to API
-
       const result = await signup(data);
       if (result.success) {
-        reset(); // Clear the form after successful submission
+        reset();
       }
 
       if (!result.success) {
@@ -71,6 +69,21 @@ function Signup() {
       setApiError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await guestLogin();
+      if (!result.success) {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setApiError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,7 +108,6 @@ function Signup() {
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-              {/* First Name */}
               <div>
                 <label
                   htmlFor="firstName"
@@ -121,7 +133,6 @@ function Signup() {
                 </div>
               </div>
 
-              {/* Last Name */}
               <div>
                 <label
                   htmlFor="lastName"
@@ -148,7 +159,6 @@ function Signup() {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -174,7 +184,6 @@ function Signup() {
               </div>
             </div>
 
-            {/* Username */}
             <div>
               <label
                 htmlFor="username"
@@ -200,7 +209,6 @@ function Signup() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -261,7 +269,6 @@ function Signup() {
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label
                 htmlFor="password_conf"
@@ -287,7 +294,6 @@ function Signup() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div>
               <button
                 type="submit"
@@ -326,6 +332,29 @@ function Signup() {
               </button>
             </div>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={handleGuestLogin}
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                {isLoading ? "Please wait" : "Guest Access"}
+              </button>
+            </div>
+          </div>
 
           <div className="mt-6">
             <div className="relative">
