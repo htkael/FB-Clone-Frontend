@@ -1,5 +1,8 @@
+import Logo from "../../public/Logo";
+import Header from "../components/layout/Header";
+
 const Feed = () => {
-  return <div>Hello</div>;
+  return <Header />;
 };
 
 export default Feed;
