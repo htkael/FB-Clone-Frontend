@@ -6,7 +6,7 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-// import Feed from "./pages/Feed";
+import Feed from "./pages/Feed";
 // import Profile from "./pages/Profile";
 // import Messaging from "./pages/Messaging";
 // import NotFound from "./pages/NotFound";
@@ -22,14 +22,15 @@ function App() {
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/register" element={<Signup />} />
-              {/* <Route
-            path="/feed"
-            element={
-              <ProtectedRoute>
-                <Feed />
-              </ProtectedRoute>
-            }
-          />
+              <Route
+                path="/feed"
+                element={
+                  <ProtectedRoute>
+                    <Feed />
+                  </ProtectedRoute>
+                }
+              />
+              {/* 
           <Route
             path="/profile/:username"
             element={

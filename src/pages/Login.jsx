@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -10,8 +11,9 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const { login, guestLogin } = useAuth();
-
-  console.log(`Errors:`, errors);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from || "/feed";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,6 +63,7 @@ const Login = () => {
       if (!result.success) {
         setErrors({ general: result.message });
       }
+      navigate(from, { replace: true });
     } catch (err) {
       setErrors({
         general: { message: "An unexpected error occurred", error: err },

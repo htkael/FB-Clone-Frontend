@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(user));
 
       setUser(user);
-      navigate("/feed");
       return response.data;
     } catch (err) {
       console.error(err);
