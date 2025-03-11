@@ -7,7 +7,7 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Feed from "./pages/Feed";
-// import Profile from "./pages/Profile";
+import Profile from "./pages/Profile";
 // import Messaging from "./pages/Messaging";
 // import NotFound from "./pages/NotFound";
 
@@ -30,15 +30,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* 
-          <Route
-            path="/profile/:username"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+              {
+                <Route
+                  path="/profile/:username"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                /* 
           <Route
             path="/messages"
             element={
@@ -47,7 +48,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<NotFound />} /> */}
+          <Route path="*" element={<NotFound />} /> */
+              }
             </Routes>
           </SocketProvider>
         </AuthProvider>

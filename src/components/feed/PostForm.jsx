@@ -47,7 +47,7 @@ const PostForm = () => {
   const createPostMutation = useMutation({
     mutationFn: postAPI.createPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
       reset();
       setImage(null);
       setPreview("");

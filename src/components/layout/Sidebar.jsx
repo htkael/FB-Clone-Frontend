@@ -29,7 +29,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen flex flex-col border-r border-gray-200 bg-white w-64 hidden md:flex">
+    <div className="sticky top-16 flex flex-col border-r border-gray-200 bg-white w-64 hidden md:flex h-[calc(100vh-4rem)] overflow-y-auto">
       <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
         <div className="flex-1 flex flex-col space-y-1 px-2">
           {navigation.map((item) => (
@@ -47,7 +47,6 @@ const Sidebar = () => {
           ))}
         </div>
       </div>
-
       {/* User info and logout */}
       <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
         <div className="flex items-center">
