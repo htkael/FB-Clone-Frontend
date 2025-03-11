@@ -19,7 +19,7 @@ const Sidebar = () => {
     { name: "Feed", href: "/feed", icon: HomeIcon },
     {
       name: "Profile",
-      href: `/profile/${user?.username}`,
+      href: `/profile/${user?.id}`,
       icon: UserCircleIcon,
     },
     { name: "Friends", href: "/friends", icon: UsersIcon },

@@ -66,7 +66,7 @@ const PostCard = ({ post }) => {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
       {/* Post header */}
       <div className="p-4 flex items-center space-x-3">
-        <Link to={`/profile/${post.author.username}`} className="flex-shrink-0">
+        <Link to={`/profile/${post.author.id}`} className="flex-shrink-0">
           {post.author.profilePicUrl ? (
             <img
               className="h-10 w-10 rounded-full"
@@ -81,7 +81,7 @@ const PostCard = ({ post }) => {
         </Link>
         <div>
           <Link
-            to={`/profile/${post.author.username}`}
+            to={`/profile/${post.author.id}`}
             className="font-medium text-gray-900 dark:text-white hover:underline"
           >
             {post.author.username}
@@ -237,7 +237,7 @@ const PostCard = ({ post }) => {
               post.comments.map((comment) => (
                 <div key={comment.id} className="flex items-start space-x-2">
                   <Link
-                    to={`/profile/${comment.author.username}`}
+                    to={`/profile/${comment.author.id}`}
                     className="flex-shrink-0"
                   >
                     {comment.author.profilePicUrl ? (
@@ -255,7 +255,7 @@ const PostCard = ({ post }) => {
                   <div className="flex-1">
                     <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-2">
                       <Link
-                        to={`/profile/${comment.author.username}`}
+                        to={`/profile/${comment.author.id}`}
                         className="font-medium text-gray-900 dark:text-white hover:underline"
                       >
                         {comment.author.username}
