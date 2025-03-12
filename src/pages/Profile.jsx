@@ -13,6 +13,7 @@ import ProfileBio from "../components/profile/ProfileBio";
 import ProfileTabs from "../components/profile/ProfileTabs";
 import ErrorFallback from "../components/common/ErrorFallback";
 import FriendsList from "../components/friends/FriendsList";
+import Likes from "../components/profile/Likes";
 import { formatDate } from "../utils/dateUtils";
 
 const Profile = () => {
@@ -194,63 +195,91 @@ const Profile = () => {
                   )}
 
                   {/* Posts List */}
-                  {isPostsLoading ? (
-                    <PostsSkeleton count={3} />
-                  ) : displayPosts.length > 0 ? (
-                    <>
-                      {displayPosts.map((post, index) => {
-                        if (index === displayPosts.length - 1) {
-                          return (
-                            <div ref={lastPostRef} key={post.id}>
-                              <PostCard post={post} />
-                            </div>
-                          );
-                        }
-                        return <PostCard key={post.id} post={post} />;
-                      })}
-                      {isFetchingNextPage && <PostsSkeleton count={1} />}
-                    </>
-                  ) : (
-                    <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                      <p className="text-gray-500">No posts to display</p>
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="p-4 border-b border-gray-200">
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Posts {displayPosts && `(${displayPosts.length})`}
+                      </h2>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "about" && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold mb-4">About</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-gray-700 font-medium">Email</p>
-                      <p className="text-gray-600">{userProfile.data.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-700 font-medium">Bio</p>
-                      <p className="text-gray-600">
-                        {userProfile.data.bio || "No bio provided yet."}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-700 font-medium">Status</p>
-                      <p className="text-gray-600">
-                        {userProfile.data.status || "No status set"}
-                      </p>
+                    <div className="p-4">
+                      {isPostsLoading ? (
+                        <PostsSkeleton count={3} />
+                      ) : displayPosts.length > 0 ? (
+                        <div className="space-y-4">
+                          {displayPosts.map((post, index) => {
+                            if (index === displayPosts.length - 1) {
+                              return (
+                                <div ref={lastPostRef} key={post.id}>
+                                  <PostCard post={post} />
+                                </div>
+                              );
+                            }
+                            return <PostCard key={post.id} post={post} />;
+                          })}
+                          {isFetchingNextPage && <PostsSkeleton count={1} />}
+                        </div>
+                      ) : (
+                        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                          <p className="text-gray-500">No posts to display</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {activeTab === "likes" && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold mb-4">Likes</h2>
-                  {/* Friends component would go here */}
-                  <p className="text-gray-500 text-center">
-                    Likes feature coming soon
-                  </p>
+              {activeTab === "about" && (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      About
+                    </h2>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center border-b border-gray-100 pb-4">
+                        <p className="text-gray-700 font-medium w-32">Email</p>
+                        <p className="text-gray-600">
+                          {userProfile.data.email}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row border-b border-gray-100 pb-4">
+                        <p className="text-gray-700 font-medium w-32">Bio</p>
+                        <div className="flex-1">
+                          {userProfile.data.bio ? (
+                            <p className="text-gray-600">
+                              {userProfile.data.bio}
+                            </p>
+                          ) : (
+                            <p className="text-gray-500 italic">
+                              No bio provided yet.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row">
+                        <p className="text-gray-700 font-medium w-32">Status</p>
+                        <div className="flex-1">
+                          {userProfile.data.status ? (
+                            <p className="text-gray-600">
+                              {userProfile.data.status}
+                            </p>
+                          ) : (
+                            <p className="text-gray-500 italic">
+                              No status set
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {activeTab === "likes" && <Likes userProfile={userProfile} />}
 
               {activeTab === "friends" && (
                 <FriendsList userProfile={userProfile} />

@@ -16,9 +16,6 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     staleTime: 60000, // 1 minute
   });
 
-  console.log("pending requests", pendingRequests);
-  console.log("User Id", userId);
-
   // Find the relevant request ID from pending requests
   useEffect(() => {
     if (pendingRequests && friendshipStatus === "PENDING") {
