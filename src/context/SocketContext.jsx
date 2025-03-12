@@ -1,15 +1,21 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext();
 
-// Set to false during development if you're having CORS issues
 const ENABLE_SOCKET = true;
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connectionError, setConnectionError] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState({});
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -30,6 +36,7 @@ export const SocketProvider = ({ children }) => {
 
         socketInstance.on("connect", () => {
           console.log("Socket connected");
+          console.log(socketInstance.id);
           setConnectionError(null);
         });
 
@@ -40,6 +47,18 @@ export const SocketProvider = ({ children }) => {
 
         socketInstance.on("disconnect", () => {
           console.log("Socket disconnected");
+        });
+
+        socketInstance.on("user:online", (data) => {
+          setOnlineUsers((prev) => ({ ...prev, [data.userId]: true }));
+        });
+
+        socketInstance.on("user:offline", (data) => {
+          setOnlineUsers((prev) => {
+            const updated = { ...prev };
+            delete updated[data.userId];
+            return updated;
+          });
         });
 
         setSocket(socketInstance);
@@ -54,9 +73,66 @@ export const SocketProvider = ({ children }) => {
     }
   }, [isAuthenticated, user]);
 
+  const joinConversation = useCallback(
+    (conversationId) => {
+      if (socket) {
+        socket.emit("conversation:join", conversationId);
+      }
+    },
+    [socket]
+  );
+
+  const sendTypingStatus = useCallback(
+    (conversationId) => {
+      if (socket) {
+        socket.emit("user:typing:start", {
+          conversationId,
+        });
+      }
+    },
+    [socket]
+  );
+
+  const markMessageAsRead = useCallback(
+    (conversationId, messageId) => {
+      if (socket) {
+        socket.emit("message:read", {
+          conversationId,
+          lastReadMessageId: messageId,
+        });
+      }
+    },
+    [socket]
+  );
+
+  const isUserOnline = useCallback(
+    (userId) => {
+      // Check if userId is defined and convert to string if needed
+      if (userId === undefined || userId === null) {
+        return false;
+      }
+
+      // Ensure userId is a string for consistent comparison
+      const userIdStr = userId.toString();
+
+      // Check if the user is in the onlineUsers object
+      return Boolean(onlineUsers[userIdStr]);
+    },
+    [onlineUsers]
+  );
+
   return (
     <SocketContext.Provider
-      value={{ socket, connectionError, socketEnabled: ENABLE_SOCKET }}
+      value={{
+        socket,
+        connectionError,
+        socketEnabled: ENABLE_SOCKET,
+        onlineUsers,
+        joinConversation,
+        sendTypingStatus,
+        markMessageAsRead,
+        isUserOnline,
+      }}
     >
       {children}
     </SocketContext.Provider>

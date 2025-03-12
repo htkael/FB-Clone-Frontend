@@ -42,6 +42,7 @@ const PostCard = ({ post }) => {
     mutationFn: () => postAPI.likePost(post.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
     },
   });
 
@@ -50,6 +51,7 @@ const PostCard = ({ post }) => {
     mutationFn: (data) => postAPI.postComment(post.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
       reset();
     },
   });
@@ -132,7 +134,7 @@ const PostCard = ({ post }) => {
           onClick={handleLike}
           className={`flex items-center justify-center w-1/2 py-2 space-x-2 rounded-md ${
             post.isLiked
-              ? "text-blue-600 dark:text-blue-400"
+              ? "text-blue-600 dark:text-blue-400  hover:bg-gray-50 dark:hover:bg-gray-700"
               : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
           }`}
           disabled={likeMutation.isLoading}

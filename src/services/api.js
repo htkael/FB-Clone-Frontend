@@ -46,7 +46,7 @@ export const postAPI = {
 
 export const userAPI = {
   getUsers: () => api.get("/users"),
-  searchUser: (content) => api.get("/users/search", content),
+  searchUser: (params) => api.get("/users/search", { params }),
   getPostsFromUser: (userId) => api.get(`/users/${userId}/posts`),
   getCommentsFromUser: (userId) => api.get(`/users/${userId}/comments`),
   getLikesFromUser: (userId) => api.get(`/users/${userId}/likes`),
@@ -73,7 +73,7 @@ export const friendAPI = {
 
 export const conversationAPI = {
   getConversations: () => api.get("/conversations"),
-  createConversation: (content) => api.post("/conversations", content),
+  createConversation: (data) => api.post("/conversations", data),
   getUnread: () => api.get("/conversations/unread"),
   markConversationAsRead: (conversationId) =>
     api.put(`/conversations/${conversationId}/read`),
@@ -92,8 +92,22 @@ export const conversationAPI = {
 };
 
 export const messageAPI = {
-  sendMessage: (conversationId, content) =>
-    api.post(`/conversations/${conversationId}/messages`, content),
+  sendMessage: async (conversationId, content) => {
+    try {
+      console.log(
+        `Sending message to conversation ${conversationId}:`,
+        content
+      );
+      const response = await api.post(
+        `/conversations/${conversationId}/messages`,
+        { content }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Complete error details:", error);
+      throw error;
+    }
+  },
   editMessage: (conversationId, messageId, content) =>
     api.put(`/conversations/${conversationId}/messages/${messageId}`, content),
   deleteMessage: (conversationId, messageId) =>
