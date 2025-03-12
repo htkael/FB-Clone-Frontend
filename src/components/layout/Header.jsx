@@ -67,7 +67,7 @@ const Header = () => {
                       onMouseLeave={() => setUserMenuOpen(false)}
                     >
                       <Link
-                        to={`/profile/${user.username}`}
+                        to={`/profile/${user.id}`}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Your Profile

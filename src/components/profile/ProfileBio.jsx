@@ -10,7 +10,7 @@ const ProfileBio = ({ bio, userId, isOwnProfile }) => {
   const queryClient = useQueryClient();
 
   const updateBioMutation = useMutation({
-    mutationFn: (newBio) => userAPI.editUser({ bio: newBio }),
+    mutationFn: (newBio) => userAPI.editUser(userId, { bio: newBio }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       setIsEditing(false);

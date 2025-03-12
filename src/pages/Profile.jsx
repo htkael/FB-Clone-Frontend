@@ -12,7 +12,7 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileBio from "../components/profile/ProfileBio";
 import ProfileTabs from "../components/profile/ProfileTabs";
 import ErrorFallback from "../components/common/ErrorFallback";
-import Skeleton from "../components/common/Skeleton";
+import FriendsList from "../components/friends/FriendsList";
 import { formatDate } from "../utils/dateUtils";
 
 const Profile = () => {
@@ -35,8 +35,6 @@ const Profile = () => {
       console.error("Error fetching user profile", error);
     },
   });
-
-  console.log("User profile", userProfile);
 
   const {
     data: postsData,
@@ -252,6 +250,10 @@ const Profile = () => {
                     Likes feature coming soon
                   </p>
                 </div>
+              )}
+
+              {activeTab === "friends" && (
+                <FriendsList userProfile={userProfile} />
               )}
             </>
           )

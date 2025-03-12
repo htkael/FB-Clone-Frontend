@@ -11,10 +11,13 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
   const { data: pendingRequests } = useQuery({
     queryKey: ["friend-requests", "pending"],
     queryFn: friendAPI.getRequests,
-    select: (response) => response.data,
+    select: (response) => response.data.data,
     enabled: friendshipStatus === "PENDING", // Only fetch when we have a pending request
     staleTime: 60000, // 1 minute
   });
+
+  console.log("pending requests", pendingRequests);
+  console.log("User Id", userId);
 
   // Find the relevant request ID from pending requests
   useEffect(() => {
@@ -22,8 +25,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
       // Look for requests where this user is either the sender or receiver
       const relevantRequest = pendingRequests.find(
         (req) =>
-          req.senderId === parseInt(userId) ||
-          req.receiverId === parseInt(userId)
+          req.userId === parseInt(userId) || req.friendId === parseInt(userId)
       );
 
       if (relevantRequest) {
@@ -91,7 +93,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
   // If received a friend request
   if (
     friendshipStatus === "PENDING" &&
-    pendingRequests?.some((req) => req.senderId === parseInt(userId))
+    pendingRequests?.some((req) => req.userId === parseInt(userId))
   ) {
     return (
       <div className="flex space-x-2">
