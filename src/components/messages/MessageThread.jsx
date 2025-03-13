@@ -19,8 +19,6 @@ const MessageThread = () => {
     deleteMessage,
   } = useMessaging();
 
-  console.log("Messages", messages);
-
   const { user } = useAuth();
   const { sendTypingStatus } = useSocket();
 

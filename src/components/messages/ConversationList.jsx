@@ -29,8 +29,6 @@ const ConversationList = () => {
     return () => clearInterval(interval);
   }, [fetchConversations]);
 
-  console.log("Conversations", conversations);
-
   return (
     <div className="h-full flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-4 border-b border-gray-200">

@@ -157,6 +157,7 @@ function messagingReducer(state, action) {
       };
     case "MARK_MESSAGES_AS_READ": {
       const convId = action.payload.conversationId;
+      const currentUserId = action.payload.currentUserId;
       return {
         ...state,
         messages: {
@@ -164,7 +165,8 @@ function messagingReducer(state, action) {
           [convId]:
             state.messages[convId]?.map((msg) => ({
               ...msg,
-              isRead: true,
+              // Only mark as read if current user is not the sender
+              isRead: msg.senderId !== currentUserId ? true : msg.isRead,
             })) || [],
         },
       };
@@ -284,11 +286,21 @@ export const MessagingProvider = ({ children }) => {
         joinConversation(conversation.id);
 
         try {
-          conversationAPI.markConversationAsRead(conversation.id);
+          await conversationAPI.markConversationAsRead(conversation.id);
+
+          if (socket) {
+            socket.emit("message:read", {
+              conversationId: conversation.id,
+              userId: parseInt(user.id),
+            });
+          }
 
           dispatch({
             type: "MARK_MESSAGES_AS_READ",
-            payload: { conversationId: conversation.id },
+            payload: {
+              conversationId: conversation.id,
+              currentUserId: parseInt(user?.id),
+            },
           });
 
           dispatch({
@@ -302,7 +314,7 @@ export const MessagingProvider = ({ children }) => {
         }
       }
     },
-    [joinConversation, fetchConversation]
+    [joinConversation, fetchConversation, user?.id]
   );
 
   const startConversation = useCallback(
@@ -391,7 +403,6 @@ export const MessagingProvider = ({ children }) => {
   const sendMessage = useCallback(async (conversationId, content) => {
     try {
       const response = await messageAPI.sendMessage(conversationId, content);
-      console.log("add message response", response);
 
       dispatch({
         type: "ADD_MESSAGE",
@@ -453,15 +464,20 @@ export const MessagingProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewMessage = (data) => {
+    const handleNewMessage = async (data) => {
       const isConversationActive =
         state.activeConversation?.id === data.message.conversationId;
+
+      const isFromCurrentUser = data.message.senderId === parseInt(user?.id);
+
+      const isRead = isConversationActive && !isFromCurrentUser;
+
       const messageWithReadStatus = {
         ...data.message,
-        isRead: isConversationActive,
+        isRead: isRead,
       };
       console.log(
-        `Recieved new message. Active?: ${isConversationActive}. isRead?: ${messageWithReadStatus}`
+        `Recieved new message. Active?: ${isConversationActive}. isRead?: ${isRead}`
       );
 
       dispatch({
@@ -470,9 +486,19 @@ export const MessagingProvider = ({ children }) => {
       });
 
       if (
-        !state.activeConversation ||
-        state.activeConversation.id !== data.message.conversationId
+        isConversationActive &&
+        data.message.senderId !== parseInt(user?.id)
       ) {
+        await conversationAPI.markConversationAsRead(
+          data.message.conversationId
+        );
+        if (socket) {
+          socket.emit("message:read", {
+            conversationId: data.message.conversationId,
+            userId: parseInt(user.id),
+          });
+        }
+      } else if (!isConversationActive) {
         const currentCount =
           state.unreadCounts[data.message.conversationId] || 0;
         dispatch({
@@ -492,7 +518,7 @@ export const MessagingProvider = ({ children }) => {
 
       if (userId !== parseInt(user?.id)) {
         dispatch({
-          type: "MARK_MESSAGE_AS_READ",
+          type: "MARK_MESSAGES_AS_READ",
           payload: { conversationId },
         });
       }
