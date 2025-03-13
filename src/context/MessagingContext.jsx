@@ -474,9 +474,6 @@ export const MessagingProvider = ({ children }) => {
         ...data.message,
         isRead: isRead,
       };
-      console.log(
-        `Recieved new message. Active?: ${isConversationActive}. isRead?: ${isRead}`
-      );
 
       dispatch({
         type: "ADD_MESSAGE",

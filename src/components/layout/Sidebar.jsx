@@ -5,7 +5,6 @@ import {
   UserCircleIcon,
   UsersIcon,
   ChatBubbleLeftRightIcon,
-  BellIcon,
   CogIcon,
   ArrowLeftOnRectangleIcon,
   HomeIcon,
@@ -22,9 +21,13 @@ const Sidebar = () => {
       href: `/profile/${user?.id}`,
       icon: UserCircleIcon,
     },
-    { name: "Friends", href: "/friends", icon: UsersIcon },
+    {
+      name: "Friends",
+      href: `/profile/${user.id}?tab=friends`,
+      icon: UsersIcon,
+    },
     { name: "Messages", href: "/messages", icon: ChatBubbleLeftRightIcon },
-    { name: "Notifications", href: "/notifications", icon: BellIcon },
+    { name: "Users", href: "/users", icon: UsersIcon },
     { name: "Settings", href: "/settings", icon: CogIcon },
   ];
 

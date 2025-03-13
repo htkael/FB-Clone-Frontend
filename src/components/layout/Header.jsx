@@ -2,6 +2,7 @@ import Logo from "../../../public/Logo";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import NotificationButton from "../../components/notifications/NotificationButton";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -38,7 +39,10 @@ const Header = () => {
 
           <div className="flex items-center lg:order-2 gap-2">
             {user ? (
-              <div className="flex items-center">
+              <div className="flex items-center gap-4">
+                {/* Notification Button */}
+                <NotificationButton />
+
                 <div className="relative ml-3" ref={userMenuRef}>
                   <button
                     type="button"

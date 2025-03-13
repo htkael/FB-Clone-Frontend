@@ -14,7 +14,6 @@ const NewConversationModal = ({ isOpen, onClose, isGroupChat = false }) => {
   const [groupTitle, setGroupTitle] = useState("");
   const { startConversation } = useMessaging();
 
-  // Search for users when search term changes
   useEffect(() => {
     const searchUsers = async () => {
       if (!searchTerm || searchTerm.length < 2) {

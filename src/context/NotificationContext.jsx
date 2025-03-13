@@ -186,15 +186,17 @@ export const NotificationsProvider = ({ children }) => {
       const response = await notificationAPI.getNotifications();
       dispatch({
         type: "FETCH_NOTIFICATIONS_SUCCESS",
-        payload: response.data.data,
+        payload: {
+          notifications: response.data.data,
+          page: response.data.meta.page,
+          hasMore: response.data.meta.hasNext,
+          totalCount: response.data.meta.total,
+        },
       });
 
-      const unread = response.data.data.filter((r) => {
-        r.isRead === "false";
-      });
       dispatch({
         type: "UPDATE_UNREAD_COUNT",
-        payload: unread.length,
+        payload: response.data.meta.unreadCount,
       });
     } catch (err) {
       console.error("Error fetching notifications", err);
@@ -204,4 +206,154 @@ export const NotificationsProvider = ({ children }) => {
       });
     }
   }, [user]);
+
+  const markAllAsRead = useCallback(async () => {
+    console.log("Attempting to mark all as read");
+    try {
+      await notificationAPI.markNotificationsAsRead();
+      dispatch({
+        type: "MARK_ALL_AS_READ",
+      });
+      socket.emit("notification:read:all");
+      dispatch({
+        type: "UPDATE_UNREAD_COUNT",
+        payload: 0,
+      });
+    } catch (err) {
+      console.error("Error reading notifications", err);
+      return false;
+    }
+  }, [socket]);
+
+  const clearNotifications = useCallback(async () => {
+    try {
+      await notificationAPI.deleteNotification();
+      dispatch({
+        type: "CLEAR_NOTIFICATIONS",
+      });
+      socket.emit("notification:clear");
+    } catch (err) {
+      console.error("Error clearing notifications", err);
+      return false;
+    }
+  }, [socket]);
+
+  const getUnreadCount = useCallback(async () => {
+    try {
+      const response = await notificationAPI.getUnreadNotifications();
+
+      dispatch({
+        type: "UPDATE_UNREAD_COUNT",
+        payload: response.data.data.count,
+      });
+    } catch (err) {
+      console.error("Error getting unread count", err);
+      return false;
+    }
+  }, []);
+
+  const loadMoreNotifications = useCallback(async () => {
+    dispatch({
+      type: "LOAD_MORE",
+    });
+    const pagination = state.pagination;
+    if (!pagination || !pagination.hasNext) return false;
+    const nextPage = pagination.page + 1;
+    try {
+      dispatch({ type: "FETCH_NOTIFICATIONS_START" });
+      const response = await notificationAPI.getNotifications({
+        page: nextPage,
+      });
+      dispatch({
+        type: "FETCH_NOTIFICATIONS_SUCCESS",
+        payload: {
+          notifications: response.data.data,
+          page: response.data.meta.page,
+          hasMore: response.data.meta.hasNext,
+          totalCount: response.data.meta.total,
+        },
+      });
+
+      return true;
+    } catch (err) {
+      console.error("Error loading more notifications", err);
+      return false;
+    }
+  }, [state.pagination]);
+
+  const handleNewNotification = useCallback(async (notification) => {
+    dispatch({
+      type: "NEW_NOTIFICATION",
+      payload: notification,
+    });
+  }, []);
+
+  const setupSocketListeners = useCallback(() => {
+    if (!socket || !user) return;
+    console.log("Setting up notification socket listeners");
+
+    socket.on("notification:new", (notification) => {
+      console.log("Receiving new notification", notification);
+      handleNewNotification(notification);
+    });
+
+    socket.on("notification:read:all", () => {
+      dispatch({
+        type: "SOCKET_ALL_READ",
+      });
+    });
+
+    socket.on("notification:clear", () => {
+      dispatch({
+        type: "SOCKET_NOTIFICATIONS_CLEARED",
+      });
+    });
+
+    return () => {
+      socket.off("notification:new");
+      socket.off("notification:read");
+      socket.off("notification:read:all");
+      socket.off("notification:clear");
+    };
+  }, [socket, user, handleNewNotification]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      getUnreadCount();
+      const cleanup = setupSocketListeners();
+
+      return () => {
+        cleanup && cleanup();
+      };
+    }
+  }, [user, fetchNotifications, getUnreadCount, setupSocketListeners]);
+
+  const value = {
+    notifications: state.notifications,
+    unreadCount: state.unreadCount,
+    loading: state.loadingNotifications,
+    error: state.error,
+    pagination: state.pagination,
+    fetchNotifications,
+    markAllAsRead,
+    clearNotifications,
+    loadMoreNotifications,
+  };
+
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+    </NotificationContext.Provider>
+  );
+};
+
+export const useNotifications = () => {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error(
+      "useNotifications must be used within a NotificationsProvider"
+    );
+  }
+  return context;
 };

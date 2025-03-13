@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { userAPI } from "../services/api";
 import { useState, useRef, useCallback } from "react";
@@ -20,8 +20,12 @@ const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState("posts"); // Initialize with a default tab
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "posts"); // Initialize with a default tab
   const observer = useRef(null);
+  console.log("search params", searchParams);
+  console.log("tab", tabFromUrl);
 
   const {
     data: userProfile,

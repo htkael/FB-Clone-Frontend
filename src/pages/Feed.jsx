@@ -1,4 +1,3 @@
-// src/pages/Feed.jsx
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { postAPI } from "../services/api";
 import MainLayout from "../components/layout/MainLayout";
@@ -11,7 +10,6 @@ const Feed = () => {
   const [page, setPage] = useState(1);
   const [allPosts, setAllPosts] = useState([]);
   const loader = useRef(null);
-
   // Fetch user feed with pagination
   const {
     data: feedResponse,
@@ -98,12 +96,10 @@ const Feed = () => {
     };
   }, [handleObserver]);
 
-  // Format posts to include helpful UI indicators
   const formatPostsForDisplay = useCallback((posts) => {
     if (posts.length < 1) {
       return [];
     }
-    console.log("posts", posts);
     posts = posts.data;
     return posts.map((post) => {
       // Add UI properties like isLiked based on API data
