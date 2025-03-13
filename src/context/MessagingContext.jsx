@@ -136,7 +136,6 @@ function messagingReducer(state, action) {
         },
       };
     case "ADD_CONVERSATION":
-      // Check if conversation already exists to avoid duplicates
       if (state.conversations.some((conv) => conv.id === action.payload.id)) {
         return state;
       }
@@ -165,7 +164,6 @@ function messagingReducer(state, action) {
           [convId]:
             state.messages[convId]?.map((msg) => ({
               ...msg,
-              // Only mark as read if current user is not the sender
               isRead: msg.senderId !== currentUserId ? true : msg.isRead,
             })) || [],
         },
@@ -314,7 +312,7 @@ export const MessagingProvider = ({ children }) => {
         }
       }
     },
-    [joinConversation, fetchConversation, user?.id]
+    [joinConversation, fetchConversation, user?.id, socket]
   );
 
   const startConversation = useCallback(
