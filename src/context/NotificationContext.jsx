@@ -290,7 +290,6 @@ export const NotificationsProvider = ({ children }) => {
 
   const setupSocketListeners = useCallback(() => {
     if (!socket || !user) return;
-    console.log("Setting up notification socket listeners");
 
     socket.on("notification:new", (notification) => {
       console.log("Receiving new notification", notification);

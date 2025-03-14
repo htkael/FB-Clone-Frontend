@@ -3,32 +3,28 @@ import { userAPI } from "../services/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UsersList from "../components/users/UsersList";
-import UserSearchModal from "../components/users/UserSearchModal";
+import UserSearch from "../components/users/UserSearch";
 import MainLayout from "../components/layout/MainLayout";
 import ErrorFallback from "../components/common/ErrorFallback";
 
 const Users = () => {
   const [users, setAllUsers] = useState([]);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
-  });
+  const [filters, setFilters] = useState("");
   const navigate = useNavigate();
 
   const { data, isLoading, error, isFetching, isSuccess } = useQuery({
     queryKey: ["users", page],
     queryFn: async () => {
       const response = await userAPI.searchUser({
-        firstName: filters.firstName,
-        lastName: filters.lastName,
-        username: filters.username,
+        searchTerm: filters,
       });
       return response;
     },
     keepPreviousData: true,
   });
+
+  console.log(data);
 
   useEffect(() => {
     if (isSuccess && data?.data) {
@@ -78,14 +74,17 @@ const Users = () => {
             </div>
           )}
 
-          <UserSearchModal filters={filters} setFilters={handleFilterChange} />
+          <UserSearch
+            filters={filters}
+            setFilters={handleFilterChange}
+            page={page}
+          />
 
           <UsersList
             data={users}
             setPage={setPage}
             isLoading={isLoading}
             isFetching={isFetching}
-            hasNextPage={data?.meta?.hasNext}
             page={page}
           />
         </div>

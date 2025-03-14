@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 import { MessagingProvider } from "./context/MessagingContext.jsx";
 import { NotificationsProvider } from "./context/NotificationContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -24,43 +25,46 @@ function App() {
           <SocketProvider>
             <MessagingProvider>
               <NotificationsProvider>
-                <Routes>
-                  <Route path="/" element={<Login />} />
-                  <Route path="/register" element={<Signup />} />
-                  <Route
-                    path="/feed"
-                    element={
-                      <ProtectedRoute>
-                        <Feed />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile/:userId"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/messages"
-                    element={
-                      <ProtectedRoute>
-                        <Messages />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/users"
-                    element={
-                      <ProtectedRoute>
-                        <Users />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* <Route path="*" element={<NotFound />} /> */}
-                </Routes>
+                <ThemeProvider>
+                  <Routes>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/register" element={<Signup />} />
+                    <Route
+                      path="/feed"
+                      element={
+                        <ProtectedRoute>
+                          <Feed />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile/:userId"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/messages"
+                      element={
+                        <ProtectedRoute>
+                          <Messages />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/users"
+                      element={
+                        <ProtectedRoute>
+                          <Users />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* <Route path="*" element={<NotFound />} /> */}
+                  </Routes>
+                </ThemeProvider>
               </NotificationsProvider>
             </MessagingProvider>
           </SocketProvider>

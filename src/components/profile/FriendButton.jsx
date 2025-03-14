@@ -2,10 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { friendAPI } from "../../services/api";
 import Button from "../common/Button";
+import { useAuth } from "../../context/AuthContext";
 
-const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
+const FriendButton = ({
+  userId,
+  isFriend,
+  friendshipStatus,
+  size = "md",
+  page,
+}) => {
   const queryClient = useQueryClient();
   const [requestId, setRequestId] = useState(null);
+  const { user } = useAuth();
 
   // Fetch pending friend requests to get requestId if needed
   const { data: pendingRequests } = useQuery({
@@ -16,10 +24,8 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     staleTime: 60000, // 1 minute
   });
 
-  // Find the relevant request ID from pending requests
   useEffect(() => {
     if (pendingRequests && friendshipStatus === "PENDING") {
-      // Look for requests where this user is either the sender or receiver
       const relevantRequest = pendingRequests.find(
         (req) =>
           req.userId === parseInt(userId) || req.friendId === parseInt(userId)
@@ -31,12 +37,12 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     }
   }, [pendingRequests, userId, friendshipStatus]);
 
-  // Mutations for friend actions
   const sendRequestMutation = useMutation({
     mutationFn: () => friendAPI.sendRequest(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["users", page] });
     },
   });
 
@@ -45,6 +51,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["users", page] });
     },
   });
 
@@ -53,6 +60,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["users", page] });
     },
   });
 
@@ -61,6 +69,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["users", page] });
     },
   });
 
@@ -69,10 +78,12 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["users", page] });
     },
   });
 
-  // If already friends, show remove friend button
+  if (userId === user.id) return;
+
   if (isFriend) {
     return (
       <div className="flex">
@@ -80,6 +91,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
           onClick={() => removeFriendMutation.mutate()}
           isLoading={removeFriendMutation.isPending}
           variant="outline"
+          size={size}
         >
           Friends
         </Button>
@@ -87,7 +99,6 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     );
   }
 
-  // If received a friend request
   if (
     friendshipStatus === "PENDING" &&
     pendingRequests?.some((req) => req.userId === parseInt(userId))
@@ -99,6 +110,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
           isLoading={acceptRequestMutation.isPending}
           variant="primary"
           disabled={!requestId}
+          size={size}
         >
           Accept
         </Button>
@@ -107,6 +119,7 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
           isLoading={rejectRequestMutation.isPending}
           variant="outline"
           disabled={!requestId}
+          size={size}
         >
           Decline
         </Button>
@@ -114,25 +127,25 @@ const FriendButton = ({ userId, isFriend, friendshipStatus }) => {
     );
   }
 
-  // If sent a friend request
   if (friendshipStatus === "PENDING") {
     return (
       <Button
         onClick={() => deleteRequestMutation.mutate()}
         isLoading={deleteRequestMutation.isPending}
         variant="outline"
+        size={size}
       >
         Cancel Request
       </Button>
     );
   }
 
-  // Default: No friendship yet
   return (
     <Button
       onClick={() => sendRequestMutation.mutate()}
       isLoading={sendRequestMutation.isPending}
       variant="primary"
+      size={size}
     >
       Add Friend
     </Button>

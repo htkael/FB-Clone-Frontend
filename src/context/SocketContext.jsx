@@ -17,6 +17,7 @@ export const SocketProvider = ({ children }) => {
   const [connectionError, setConnectionError] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState({});
   const { user, isAuthenticated } = useAuth();
+  console.log("online users", onlineUsers);
 
   useEffect(() => {
     if (ENABLE_SOCKET && isAuthenticated && user) {
@@ -47,6 +48,14 @@ export const SocketProvider = ({ children }) => {
 
         socketInstance.on("disconnect", () => {
           console.log("Socket disconnected");
+        });
+
+        socketInstance.on("users:online:initial", (data) => {
+          const initialOnlineUsers = {};
+          data.userIds.forEach((id) => {
+            initialOnlineUsers[id] = true;
+          });
+          setOnlineUsers(initialOnlineUsers);
         });
 
         socketInstance.on("user:online", (data) => {

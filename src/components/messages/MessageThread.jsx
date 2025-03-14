@@ -37,6 +37,11 @@ const MessageThread = () => {
     : [];
   const pagination = conversationId ? messagePagination[conversationId] : null;
   const isGroupChat = activeConversation?.isGroup;
+  const uniqueMessages = [
+    ...new Map(
+      conversationMessages.map((message) => [message.id, message])
+    ).values(),
+  ];
 
   const observer = useRef(null);
 
@@ -202,7 +207,7 @@ const MessageThread = () => {
   const currentTypingUsers = typingUsers[conversationId] || {};
   const typingUsersList = Object.values(currentTypingUsers);
 
-  const displayMessages = [...conversationMessages].reverse();
+  const displayMessages = [...uniqueMessages].reverse();
 
   return (
     <div className="h-full flex flex-col bg-white rounded-lg shadow-md overflow-hidden">

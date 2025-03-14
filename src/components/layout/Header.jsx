@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import NotificationButton from "../../components/notifications/NotificationButton";
 
-const Header = () => {
+const Header = ({ openModal }) => {
   const { user, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -76,12 +76,13 @@ const Header = () => {
                       >
                         Your Profile
                       </Link>
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      <button
+                        onClick={() => openModal()}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Settings
-                      </Link>
+                      </button>
+
                       <button
                         onClick={() => logout()}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

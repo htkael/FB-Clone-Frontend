@@ -4,13 +4,15 @@ import MainLayout from "../components/layout/MainLayout";
 import PostForm from "../components/feed/PostForm";
 import PostCard from "../components/feed/PostCard";
 import { useState, useEffect, useRef, useCallback } from "react";
+import SettingsModal from "../components/settings/SettingsModal";
 
 const Feed = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [allPosts, setAllPosts] = useState([]);
   const loader = useRef(null);
-  // Fetch user feed with pagination
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const {
     data: feedResponse,
     isLoading,
@@ -102,9 +104,8 @@ const Feed = () => {
     }
     posts = posts.data;
     return posts.map((post) => {
-      // Add UI properties like isLiked based on API data
       const isLiked = post.likes.some(
-        (like) => like.userId === parseInt(localStorage.getItem("userId"))
+        (like) => like.userId === JSON.parse(localStorage.getItem("user")).id
       );
 
       return {
@@ -118,8 +119,12 @@ const Feed = () => {
 
   const displayPosts = formatPostsForDisplay(allPosts);
 
+  const openSettingsModal = () => {
+    setIsSettingsOpen(true);
+  };
+
   return (
-    <MainLayout>
+    <MainLayout openModal={openSettingsModal}>
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-white">Your Feed</h1>
 
@@ -176,6 +181,13 @@ const Feed = () => {
           </div>
         </div>
       </div>
+
+      {isSettingsOpen && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
     </MainLayout>
   );
 };

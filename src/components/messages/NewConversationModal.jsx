@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import Input from "../common/Input";
@@ -13,6 +13,13 @@ const NewConversationModal = ({ isOpen, onClose, isGroupChat = false }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupTitle, setGroupTitle] = useState("");
   const { startConversation } = useMessaging();
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -23,9 +30,10 @@ const NewConversationModal = ({ isOpen, onClose, isGroupChat = false }) => {
 
       setIsSearching(true);
       try {
-        const response = await userAPI.searchUser({ username: searchTerm });
+        const response = await userAPI.searchUser({ searchTerm });
+        console.log(response);
 
-        setSearchResults(response.data.users || []);
+        setSearchResults(response.data.data || []);
       } catch (error) {
         console.error("Error searching users:", error);
         setSearchResults([]);
@@ -110,7 +118,13 @@ const NewConversationModal = ({ isOpen, onClose, isGroupChat = false }) => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by username or name"
+          ref={searchInputRef}
         />
+        {searchTerm && searchTerm.length < 2 && (
+          <p className="text-sm text-gray-500 mt-1">
+            Please enter at least 2 characters to search
+          </p>
+        )}
       </div>
 
       {/* Selected users for group chat */}

@@ -24,8 +24,6 @@ const Profile = () => {
   const tabFromUrl = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabFromUrl || "posts"); // Initialize with a default tab
   const observer = useRef(null);
-  console.log("search params", searchParams);
-  console.log("tab", tabFromUrl);
 
   const {
     data: userProfile,
@@ -71,7 +69,6 @@ const Profile = () => {
     [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
-  // Fixed syntax error in the callback reference
   const lastPostRef = useCallback(
     (node) => {
       if (observer.current) observer.current.disconnect();
@@ -83,7 +80,6 @@ const Profile = () => {
     [handleObserver]
   );
 
-  // Safely extract posts to avoid undefined errors
   const allPosts = postsData
     ? postsData.pages.flatMap((page) => page.data || [])
     : [];

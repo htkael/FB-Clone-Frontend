@@ -28,7 +28,6 @@ const Sidebar = () => {
     },
     { name: "Messages", href: "/messages", icon: ChatBubbleLeftRightIcon },
     { name: "Users", href: "/users", icon: UsersIcon },
-    { name: "Settings", href: "/settings", icon: CogIcon },
   ];
 
   return (
