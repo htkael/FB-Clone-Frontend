@@ -2,6 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import Input from "../components/common/Input";
+import Button from "../components/common/Button";
+
+// Import icons
+import {
+  EnvelopeIcon,
+  LockClosedIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -59,15 +69,16 @@ const Login = () => {
       }
 
       const result = await login(loginData);
-      console.log("Result", result);
       if (!result.success) {
         setErrors({ general: result.message });
+      } else {
+        navigate(from, { replace: true });
       }
-      navigate(from, { replace: true });
     } catch (err) {
       setErrors({
-        general: { message: "An unexpected error occurred", error: err },
+        general: "An unexpected error occurred. Please try again.",
       });
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -78,147 +89,178 @@ const Login = () => {
     try {
       const result = await guestLogin();
       if (!result.success) {
-        setErrors({ general: result.data.message });
+        setErrors({ general: result.message || "Guest login failed" });
+      } else {
+        navigate(from, { replace: true });
       }
     } catch (err) {
       setErrors({
-        general: { message: "An unexpected error occurred", error: err },
+        general: "An unexpected error occurred with guest login.",
       });
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <motion.div
+      className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col justify-center py-12 sm:px-6 lg:px-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Facebook Clone
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Connect with friends and the world around you
-        </p>
+        <motion.div variants={itemVariants} className="text-center">
+          <img src="/logo.png" alt="Logo" className="mx-auto h-16 w-auto" />
+          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
+            Climbing Connection
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
+            Connect with friends and the climbing world around you
+          </p>
+        </motion.div>
       </div>
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+
+      <motion.div
+        variants={itemVariants}
+        className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
+      >
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow-lg sm:rounded-xl sm:px-10 border border-gray-200 dark:border-gray-700">
           {errors.general && (
-            <div className="mb-4 bg-red border-l-4 border-red-500 p-4">
-              <p className="text-sm text-red-700">{errors.general}</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 p-4 rounded-r-lg"
+            >
+              <p className="text-sm text-red-700 dark:text-red-400">
+                {errors.general}
+              </p>
+            </motion.div>
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label
-                htmlFor="identifier"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email or username
-              </label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  name="identifier"
-                  id="identifier"
-                  autoComplete="email username"
-                  required
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.identifier ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                  value={credentials.identifier}
-                  onChange={handleChange}
-                />
-                {errors.identifier && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {errors.identifier.message}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  autoComplete="current-password"
-                  required
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.identifier ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                  value={credentials.password}
-                  onChange={handleChange}
-                />
-                {errors.password && (
-                  <p className="mt-2 text-sm text-red-600">{errors.password}</p>
-                )}
-              </div>
+              <Input
+                label="Email or username"
+                name="identifier"
+                id="identifier"
+                type="text"
+                required
+                value={credentials.identifier}
+                onChange={handleChange}
+                error={errors.identifier}
+                leftIcon={<EnvelopeIcon className="h-5 w-5 text-gray-400" />}
+                autoComplete="email username"
+              />
             </div>
 
             <div>
-              <button
+              <Input
+                label="Password"
+                name="password"
+                id="password"
+                type="password"
+                required
+                value={credentials.password}
+                onChange={handleChange}
+                error={errors.password}
+                leftIcon={<LockClosedIcon className="h-5 w-5 text-gray-400" />}
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div>
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                isLoading={isLoading && !credentials.guest}
+                variant="primary"
+                size="lg"
+                fullWidth
               >
-                {isLoading ? "Logging in..." : "Log in"}
-              </button>
+                Log in
+              </Button>
             </div>
           </form>
 
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                   Or continue with
                 </span>
               </div>
             </div>
 
             <div className="mt-6">
-              <button
+              <Button
                 onClick={handleGuestLogin}
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                isLoading={isLoading && credentials.guest}
+                variant="success"
+                size="lg"
+                fullWidth
+                icon={<UserIcon className="w-5 h-5" />}
               >
-                {isLoading ? "Please wait" : "Guest Access"}
-              </button>
+                Guest Access
+              </Button>
             </div>
           </div>
 
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  New to Facebook Clone?
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  New to Climbing Connection?
                 </span>
               </div>
             </div>
 
             <div className="mt-6">
-              <Link
-                to="/register"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Create New Account
+              <Link to="/register">
+                <Button variant="outline" size="lg" fullWidth>
+                  Create New Account
+                </Button>
               </Link>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

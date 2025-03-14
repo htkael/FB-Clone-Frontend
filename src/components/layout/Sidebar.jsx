@@ -32,24 +32,29 @@ const Sidebar = () => {
 
   // Check if the current path matches a navigation item
   const isActive = (href) => {
-    if (href === "/feed" && location.pathname === "/feed") return true;
+    // Get the current path and query
+    const currentPathname = location.pathname;
+    const currentSearch = location.search;
 
-    // Handle profile path specifically
-    if (
-      href.startsWith(`/profile/${user?.id}`) &&
-      location.pathname.startsWith(`/profile/${user?.id}`)
-    ) {
-      // Check if both have the same query parameter or both don't have it
-      if (href.includes("?tab=") && location.pathname.includes("?tab=")) {
-        return href.split("?tab=")[1] === location.pathname.split("?tab=")[1];
-      }
-      if (!href.includes("?tab=") && !location.pathname.includes("?tab=")) {
-        return true;
-      }
-      return false;
+    // For the friends tab in profile
+    if (href.includes("?tab=friends")) {
+      return (
+        currentPathname.startsWith(`/profile/`) &&
+        currentSearch.includes("tab=friends")
+      );
     }
 
-    return location.pathname === href;
+    // For the regular profile tab
+    if (href === `/profile/${user?.id}` && !href.includes("?")) {
+      // This is active if we're on the profile page and NOT viewing the friends tab
+      return (
+        currentPathname === `/profile/${user?.id}` &&
+        !currentSearch.includes("tab=friends")
+      );
+    }
+
+    // For other paths
+    return currentPathname === href;
   };
 
   return (

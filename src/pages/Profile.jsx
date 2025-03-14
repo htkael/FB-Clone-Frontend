@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { userAPI } from "../services/api";
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import MainLayout from "../components/layout/MainLayout";
 import PostCard from "../components/feed/PostCard";
@@ -15,7 +15,6 @@ import ErrorFallback from "../components/common/ErrorFallback";
 import FriendsList from "../components/friends/FriendsList";
 import Likes from "../components/profile/Likes";
 import Skeleton from "../components/common/Skeleton";
-import Avatar from "../components/common/Avatar";
 import { formatDate } from "../utils/dateUtils";
 import SettingsModal from "../components/settings/SettingsModal";
 
@@ -67,6 +66,16 @@ const Profile = () => {
     enabled: activeTab === "posts",
     staleTime: 60 * 1000,
   });
+
+  useEffect(() => {
+    // Update the active tab when the URL query parameter changes
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    } else {
+      setActiveTab("posts"); // Default to posts if no tab is specified
+    }
+  }, [searchParams]);
 
   const handleObserver = useCallback(
     (entries) => {

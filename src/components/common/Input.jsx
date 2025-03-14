@@ -29,7 +29,7 @@ const Input = forwardRef(
     // Disabled state
     const disabledStyles = disabled
       ? "bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
-      : "bg-white dark:bg-gray-900";
+      : "";
 
     return (
       <div className="mb-4 w-full">
@@ -60,6 +60,7 @@ const Input = forwardRef(
               block w-full border rounded-lg shadow-sm placeholder-gray-400 dark:placeholder-gray-500
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
               dark:focus:ring-blue-400 dark:focus:border-blue-400
+              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
               ${sizeClasses[size]}
               ${leftIcon ? "pl-10" : ""}
               ${rightIcon ? "pr-10" : ""}
