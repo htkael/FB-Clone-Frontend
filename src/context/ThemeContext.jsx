@@ -20,6 +20,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const [theme, setTheme] = useState(getInitialTheme);
+  console.log(theme);
 
   const toggleTheme = () => {
     setTheme((prevTheme) => {

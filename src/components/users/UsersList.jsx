@@ -1,13 +1,17 @@
 import { useRef, useCallback, useEffect } from "react";
 import UserCard from "./UserCard";
 import { useAuth } from "../../context/AuthContext";
+import Skeleton from "../common/Skeleton";
+
+// Import icons
+import { UsersIcon } from "@heroicons/react/24/outline";
 
 const UsersList = ({ page, data, setPage, isLoading, isFetching }) => {
   const loader = useRef(null);
   const currentUser = useAuth().user;
 
   // Check if data exists and has the expected structure
-  const users = data?.data || [];
+  const users = data || [];
 
   const handleObserver = useCallback(
     (entries) => {
@@ -44,24 +48,41 @@ const UsersList = ({ page, data, setPage, isLoading, isFetching }) => {
     };
   }, [handleObserver]);
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {users.length > 0 ? (
-        users.map((user) => {
-          if (user.id === currentUser.id) return;
-          return <UserCard key={user.id} user={user} page={page} />;
-        })
-      ) : (
-        <div className="col-span-full text-center py-8">
-          <p className="text-gray-500">No users found</p>
-        </div>
-      )}
+  // Filter out current user from the list
+  const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
 
-      <div ref={loader} className="col-span-full h-10 my-4">
-        {isFetching && page > 1 && (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-2 text-gray-500 text-sm">Loading more users...</p>
+  if (filteredUsers.length === 0 && !isFetching && !isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 mb-4">
+          <UsersIcon className="w-8 h-8" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+          No users found
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          Try searching with different keywords or check back later for new
+          users
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        {filteredUsers.map((user) => (
+          <UserCard key={user.id} user={user} page={page} />
+        ))}
+      </div>
+
+      <div ref={loader} className="h-16 my-4">
+        {isFetching && (
+          <div className="flex flex-col items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-blue-400"></div>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Loading more users...
+            </p>
           </div>
         )}
       </div>

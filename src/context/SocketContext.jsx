@@ -17,14 +17,12 @@ export const SocketProvider = ({ children }) => {
   const [connectionError, setConnectionError] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState({});
   const { user, isAuthenticated } = useAuth();
-  console.log("online users", onlineUsers);
 
   useEffect(() => {
     if (ENABLE_SOCKET && isAuthenticated && user) {
       try {
         const BASE_URL = import.meta.env.VITE_API_URL;
         const socketUrl = BASE_URL.replace(/\/api$/, "");
-        console.log("Attempting to connect to socket server:", socketUrl);
 
         const socketInstance = io(socketUrl, {
           auth: {
@@ -36,8 +34,6 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketInstance.on("connect", () => {
-          console.log("Socket connected");
-          console.log(socketInstance.id);
           setConnectionError(null);
         });
 

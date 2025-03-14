@@ -8,6 +8,9 @@ const Modal = ({
   title,
   size = "md",
   showCloseButton = true,
+  footer = null,
+  centered = true,
+  closeOnClickOutside = true,
 }) => {
   const modalRef = useRef(null);
 
@@ -32,13 +35,23 @@ const Modal = ({
 
   // Handle click outside of modal to close
   const handleOverlayClick = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
+    if (
+      closeOnClickOutside &&
+      modalRef.current &&
+      !modalRef.current.contains(event.target)
+    ) {
       onClose();
     }
   };
 
+  // Animation classes
+  const animationClasses = isOpen
+    ? "opacity-100 scale-100"
+    : "opacity-0 scale-95";
+
   // Determine modal width based on size prop
   const sizeClass = {
+    xs: "max-w-xs",
     sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",
@@ -50,25 +63,34 @@ const Modal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/30 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 dark:bg-black/60 backdrop-blur-sm flex p-4"
+      style={{ alignItems: centered ? "center" : "flex-start" }}
       onClick={handleOverlayClick}
+      aria-labelledby={title ? "modal-title" : undefined}
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        className={`bg-white rounded-lg shadow-xl w-full ${sizeClass} transform transition-all`}
+        className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${sizeClass} transform transition-all duration-300 ease-out ${animationClasses} mx-auto my-8`}
         ref={modalRef}
       >
         {title && (
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h3
+              className="text-lg font-medium text-gray-900 dark:text-white"
+              id="modal-title"
+            >
+              {title}
+            </h3>
             {showCloseButton && (
               <button
                 type="button"
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 rounded-full p-1"
                 onClick={onClose}
+                aria-label="Close modal"
               >
-                <span className="sr-only">Close</span>
                 <svg
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -84,7 +106,15 @@ const Modal = ({
             )}
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto max-h-[calc(100vh-10rem)] dark:text-gray-200">
+          {children}
+        </div>
+
+        {footer && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-xl">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body

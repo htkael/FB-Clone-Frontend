@@ -11,7 +11,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   const handleDeleteAccount = async () => {
     try {
-      await userAPI.deleteAccount(user.id);
+      await userAPI.deleteUser(user.id);
       logout();
       onClose();
     } catch (error) {

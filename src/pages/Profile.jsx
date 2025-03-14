@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { userAPI } from "../services/api";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import MainLayout from "../components/layout/MainLayout";
 import PostCard from "../components/feed/PostCard";
@@ -14,7 +14,19 @@ import ProfileTabs from "../components/profile/ProfileTabs";
 import ErrorFallback from "../components/common/ErrorFallback";
 import FriendsList from "../components/friends/FriendsList";
 import Likes from "../components/profile/Likes";
+import Skeleton from "../components/common/Skeleton";
+import Avatar from "../components/common/Avatar";
 import { formatDate } from "../utils/dateUtils";
+import SettingsModal from "../components/settings/SettingsModal";
+
+// Import icons (assuming you're using heroicons)
+import {
+  PlusIcon,
+  UserIcon,
+  CalendarIcon,
+  EnvelopeIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -24,6 +36,7 @@ const Profile = () => {
   const tabFromUrl = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabFromUrl || "posts"); // Initialize with a default tab
   const observer = useRef(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const {
     data: userProfile,
@@ -50,11 +63,7 @@ const Profile = () => {
     queryFn: ({ pageParam = 1 }) =>
       userAPI.getPostsFromUser(userId, { page: pageParam }),
     getNextPageParam: (lastPage) =>
-      lastPage.meta?.hasNext ? lastPage.meta.page + 1 : undefined,
-    select: (data) => ({
-      pages: data.pages.map((page) => page.data || []),
-      pageParams: data.pageParams,
-    }),
+      lastPage.data?.meta?.hasNext ? lastPage.data.meta.page + 1 : undefined,
     enabled: activeTab === "posts",
     staleTime: 60 * 1000,
   });
@@ -80,9 +89,19 @@ const Profile = () => {
     [handleObserver]
   );
 
-  const allPosts = postsData
-    ? postsData.pages.flatMap((page) => page.data || [])
-    : [];
+  // Correctly access the nested post data structure
+  const allPosts = useMemo(() => {
+    if (!postsData) return [];
+
+    // Extract posts from each page
+    return postsData.pages.flatMap((page) => {
+      // Check if page.data exists and has data array
+      if (page.data && Array.isArray(page.data.data)) {
+        return page.data.data;
+      }
+      return [];
+    });
+  }, [postsData]);
 
   const formatPostForDisplay = useCallback(
     (post) => {
@@ -90,9 +109,8 @@ const Profile = () => {
 
       // Safely check for likes array
       const isLiked =
-        post.likes?.some(
-          (like) => like.user?.id === parseInt(currentUser?.id)
-        ) || false;
+        post.likes?.some((like) => like.userId === parseInt(currentUser?.id)) ||
+        false;
 
       return {
         ...post,
@@ -105,13 +123,13 @@ const Profile = () => {
   );
 
   // Filter out any null values that might result from formatPostForDisplay
-  const displayPosts = allPosts
-    .map(formatPostForDisplay)
-    .filter((post) => post !== null);
+  const displayPosts = useMemo(() => {
+    return allPosts.map(formatPostForDisplay).filter((post) => post !== null);
+  }, [allPosts, formatPostForDisplay]);
 
   if (profileError) {
     return (
-      <MainLayout>
+      <MainLayout openModal={openSettingsModal}>
         <ErrorFallback
           error={profileError}
           resetErrorBoundary={() => navigate("/feed")}
@@ -120,9 +138,16 @@ const Profile = () => {
     );
   }
 
+  // Determine if this is the current user's profile
+  const isOwnProfile = parseInt(currentUser?.id) === parseInt(userId);
+
+  const openSettingsModal = () => {
+    setIsSettingsOpen(true);
+  };
+
   return (
-    <MainLayout>
-      <div className="max-w-3xl mx-auto px-4 py-6">
+    <MainLayout openModal={openSettingsModal}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         {isProfileLoading ? (
           <ProfileSkeleton />
         ) : (
@@ -136,23 +161,26 @@ const Profile = () => {
                 profilePicUrl={userProfile.data.profilePicUrl}
               />
 
-              <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-200 dark:border-gray-700">
                 <div className="p-6">
                   {/* Profile Info and Friend Button Section */}
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-900">
+                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         {userProfile.data.firstName} {userProfile.data.lastName}
                       </h1>
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 dark:text-gray-400">
                         @{userProfile.data.username}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Joined {formatDate(userProfile.data.createdAt)}
-                      </p>
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-500 mt-1">
+                        <CalendarIcon className="w-4 h-4 mr-1.5" />
+                        <span>
+                          Joined {formatDate(userProfile.data.createdAt)}
+                        </span>
+                      </div>
                     </div>
 
-                    {parseInt(currentUser?.id) !== parseInt(userId) && (
+                    {!isOwnProfile && (
                       <FriendButton
                         userId={userId}
                         isFriend={userProfile.data.relationship?.isFriend}
@@ -167,9 +195,7 @@ const Profile = () => {
                   <ProfileBio
                     bio={userProfile.data.bio}
                     userId={userId}
-                    isOwnProfile={
-                      parseInt(currentUser?.id) === parseInt(userId)
-                    }
+                    isOwnProfile={isOwnProfile}
                   />
 
                   {/* Profile Stats */}
@@ -190,37 +216,88 @@ const Profile = () => {
               {activeTab === "posts" && (
                 <div className="space-y-4">
                   {/* Post Form (only on own profile) */}
-                  {parseInt(currentUser?.id) === parseInt(userId) && (
-                    <PostForm />
+                  {isOwnProfile && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden p-4 border border-gray-200 dark:border-gray-700">
+                      <PostForm />
+                    </div>
                   )}
 
                   {/* Posts List */}
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b border-gray-200">
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        Posts {displayPosts && `(${displayPosts.length})`}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                        Posts
+                        {displayPosts && displayPosts.length > 0 && (
+                          <span className="ml-2 text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2.5 py-0.5">
+                            {displayPosts.length}
+                          </span>
+                        )}
                       </h2>
                     </div>
-                    <div className="p-4">
+
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                       {isPostsLoading ? (
-                        <PostsSkeleton count={3} />
+                        <div className="p-4 space-y-4">
+                          <Skeleton.Card hasHeader={true} withShimmer />
+                          <Skeleton.Card
+                            hasHeader={true}
+                            hasImage={true}
+                            withShimmer
+                          />
+                        </div>
                       ) : displayPosts.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="space-y-0 divide-y divide-gray-200 dark:divide-gray-700">
                           {displayPosts.map((post, index) => {
+                            // Ensure a unique key with string conversion
+                            const postKey = `post-${post.id || index}`;
+
                             if (index === displayPosts.length - 1) {
                               return (
-                                <div ref={lastPostRef} key={post.id}>
+                                <div
+                                  ref={lastPostRef}
+                                  key={postKey}
+                                  className="p-4"
+                                >
                                   <PostCard post={post} />
                                 </div>
                               );
                             }
-                            return <PostCard key={post.id} post={post} />;
+                            return (
+                              <div key={postKey} className="p-4">
+                                <PostCard post={post} />
+                              </div>
+                            );
                           })}
-                          {isFetchingNextPage && <PostsSkeleton count={1} />}
+                          {isFetchingNextPage && (
+                            <div className="p-4">
+                              <Skeleton.Card hasHeader={true} withShimmer />
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                          <p className="text-gray-500">No posts to display</p>
+                        <div className="p-8 text-center">
+                          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 mb-4">
+                            <UserIcon className="w-8 h-8" />
+                          </div>
+                          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                            No posts yet
+                          </h3>
+                          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                            {isOwnProfile
+                              ? "Share your thoughts or photos with your friends by creating your first post."
+                              : `${userProfile.data.firstName} hasn't shared any posts yet.`}
+                          </p>
+                          {isOwnProfile && (
+                            <button
+                              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              onClick={() =>
+                                document.querySelector("textarea")?.focus()
+                              }
+                            >
+                              <PlusIcon className="h-5 w-5 mr-2" />
+                              Create a post
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -229,31 +306,38 @@ const Profile = () => {
               )}
 
               {activeTab === "about" && (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-900">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                      <InformationCircleIcon className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
                       About
                     </h2>
                   </div>
 
                   <div className="p-6">
                     <div className="space-y-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center border-b border-gray-100 pb-4">
-                        <p className="text-gray-700 font-medium w-32">Email</p>
-                        <p className="text-gray-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium w-32 mb-2 sm:mb-0">
+                          <EnvelopeIcon className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+                          <span>Email</span>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400">
                           {userProfile.data.email}
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row border-b border-gray-100 pb-4">
-                        <p className="text-gray-700 font-medium w-32">Bio</p>
+                      <div className="flex flex-col sm:flex-row border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium w-32 mb-2 sm:mb-0">
+                          <UserIcon className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+                          <span>Bio</span>
+                        </div>
                         <div className="flex-1">
                           {userProfile.data.bio ? (
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line">
                               {userProfile.data.bio}
                             </p>
                           ) : (
-                            <p className="text-gray-500 italic">
+                            <p className="text-gray-500 dark:text-gray-500 italic">
                               No bio provided yet.
                             </p>
                           )}
@@ -261,14 +345,17 @@ const Profile = () => {
                       </div>
 
                       <div className="flex flex-col sm:flex-row">
-                        <p className="text-gray-700 font-medium w-32">Status</p>
+                        <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium w-32 mb-2 sm:mb-0">
+                          <CalendarIcon className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+                          <span>Status</span>
+                        </div>
                         <div className="flex-1">
                           {userProfile.data.status ? (
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-gray-400">
                               {userProfile.data.status}
                             </p>
                           ) : (
-                            <p className="text-gray-500 italic">
+                            <p className="text-gray-500 dark:text-gray-500 italic">
                               No status set
                             </p>
                           )}
@@ -288,55 +375,46 @@ const Profile = () => {
           )
         )}
       </div>
+      {isSettingsOpen && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
     </MainLayout>
   );
 };
 
 const ProfileSkeleton = () => (
   <div className="space-y-4">
-    <div className="bg-gray-200 h-40 rounded-lg animate-pulse"></div>
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center mb-4">
-        <div className="bg-gray-200 h-16 w-16 rounded-full animate-pulse mr-4"></div>
-        <div className="flex-1">
-          <div className="bg-gray-200 h-6 w-2/3 rounded animate-pulse mb-2"></div>
-          <div className="bg-gray-200 h-4 w-1/3 rounded animate-pulse"></div>
+    <div className="bg-gray-200 dark:bg-gray-700 h-48 rounded-xl animate-pulse"></div>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+      <div className="p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+          <div className="flex items-center mb-4 sm:mb-0">
+            <Skeleton.Avatar size="xl" withShimmer />
+            <div className="ml-4">
+              <div className="bg-gray-200 dark:bg-gray-700 h-7 w-48 rounded animate-pulse mb-2"></div>
+              <div className="bg-gray-200 dark:bg-gray-700 h-5 w-32 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="bg-gray-200 dark:bg-gray-700 h-10 w-32 rounded-lg animate-pulse"></div>
+        </div>
+        <div className="bg-gray-200 dark:bg-gray-700 h-20 rounded-lg animate-pulse mb-6"></div>
+        <div className="flex justify-between">
+          <div className="bg-gray-200 dark:bg-gray-700 h-12 w-1/3 rounded-lg animate-pulse"></div>
+          <div className="bg-gray-200 dark:bg-gray-700 h-12 w-1/3 rounded-lg animate-pulse"></div>
         </div>
       </div>
-      <div className="bg-gray-200 h-20 rounded animate-pulse mb-4"></div>
-      <div className="flex justify-between">
-        <div className="bg-gray-200 h-10 w-1/4 rounded animate-pulse"></div>
-        <div className="bg-gray-200 h-10 w-1/4 rounded animate-pulse"></div>
-        <div className="bg-gray-200 h-10 w-1/4 rounded animate-pulse"></div>
+      <div className="border-t border-gray-200 dark:border-gray-700">
+        <div className="flex p-4">
+          <div className="bg-gray-200 dark:bg-gray-700 h-10 w-20 mx-2 rounded animate-pulse"></div>
+          <div className="bg-gray-200 dark:bg-gray-700 h-10 w-20 mx-2 rounded animate-pulse"></div>
+          <div className="bg-gray-200 dark:bg-gray-700 h-10 w-20 mx-2 rounded animate-pulse"></div>
+        </div>
       </div>
     </div>
   </div>
-);
-
-const PostsSkeleton = ({ count }) => (
-  <>
-    {Array(count)
-      .fill(0)
-      .map((_, index) => (
-        <div
-          key={index}
-          className="bg-white rounded-lg shadow-md p-6 animate-pulse"
-        >
-          <div className="flex items-center mb-4">
-            <div className="bg-gray-200 h-10 w-10 rounded-full mr-3"></div>
-            <div>
-              <div className="bg-gray-200 h-4 w-32 rounded mb-1"></div>
-              <div className="bg-gray-200 h-3 w-24 rounded"></div>
-            </div>
-          </div>
-          <div className="bg-gray-200 h-24 rounded mb-4"></div>
-          <div className="flex justify-between">
-            <div className="bg-gray-200 h-8 w-16 rounded"></div>
-            <div className="bg-gray-200 h-8 w-16 rounded"></div>
-          </div>
-        </div>
-      ))}
-  </>
 );
 
 export default Profile;

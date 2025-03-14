@@ -6,7 +6,14 @@ const NotificationBadge = () => {
 
   if (!unreadCount || unreadCount === 0) return null;
 
-  return <Badge count={unreadCount} size="sm" />;
+  return (
+    <Badge
+      count={unreadCount}
+      size="xs"
+      variant="danger"
+      className="animate-pulse-subtle"
+    />
+  );
 };
 
 export default NotificationBadge;
