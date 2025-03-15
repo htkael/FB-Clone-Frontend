@@ -8,7 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-const ProfileTabs = ({ activeTab, setActiveTab }) => {
+const ProfileTabs = ({ activeTab, setActiveTab, currentUser }) => {
   const tabs = [
     { id: "posts", label: "Posts", icon: DocumentTextIcon },
     { id: "about", label: "About", icon: UserIcon },
@@ -22,17 +22,18 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
 
-    // If switching to the friends tab, add the query parameter
-    if (tabId === "friends") {
-      navigate(`/profile/${userId}?tab=friends`, { replace: true });
-    } else if (tabId === "about") {
-      navigate(`/profile/${userId}?tab=about`, { replace: true });
-    } else if (tabId === "likes") {
-      navigate(`/profile/${userId}?tab=likes`, { replace: true });
-    }
-    // For any other tab, remove the query parameter by navigating to the base URL
-    else {
-      navigate(`/profile/${userId}`, { replace: true });
+    if (userId === currentUser.id) {
+      if (tabId === "friends") {
+        navigate(`/profile/${userId}?tab=friends`, { replace: true });
+      } else if (tabId === "about") {
+        navigate(`/profile/${userId}?tab=about`, { replace: true });
+      } else if (tabId === "likes") {
+        navigate(`/profile/${userId}?tab=likes`, { replace: true });
+      }
+      // For any other tab, remove the query parameter by navigating to the base URL
+      else {
+        navigate(`/profile/${userId}`, { replace: true });
+      }
     }
   };
 

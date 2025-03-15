@@ -59,10 +59,19 @@ const Profile = () => {
     isLoading: isPostsLoading,
   } = useInfiniteQuery({
     queryKey: ["user-posts", userId],
-    queryFn: ({ pageParam = 1 }) =>
-      userAPI.getPostsFromUser(userId, { page: pageParam }),
-    getNextPageParam: (lastPage) =>
-      lastPage.data?.meta?.hasNext ? lastPage.data.meta.page + 1 : undefined,
+    queryFn: ({ pageParam = 1 }) => {
+      console.log("Fetching page", pageParam);
+      return userAPI.getPostsFromUser(userId, { page: pageParam });
+    },
+    getNextPageParam: (lastPage) => {
+      console.log("getNextPageParam called with", lastPage);
+      if (!lastPage.data?.meta) return undefined;
+
+      const hasMore = lastPage.data.meta.hasNext;
+      const nextPage = hasMore ? lastPage.data.meta.page + 1 : undefined;
+      console.log("Next page calculated:", nextPage);
+      return nextPage;
+    },
     enabled: activeTab === "posts",
     staleTime: 60 * 1000,
   });
@@ -80,7 +89,13 @@ const Profile = () => {
   const handleObserver = useCallback(
     (entries) => {
       const [entry] = entries;
+      console.log("Intersection observer triggered", {
+        isIntersecting: entry.isIntersecting,
+        hasNextPage,
+        isFetchingNextPage,
+      });
       if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        console.log("Fetching next page...");
         fetchNextPage();
       }
     },
@@ -102,14 +117,26 @@ const Profile = () => {
   const allPosts = useMemo(() => {
     if (!postsData) return [];
 
-    // Extract posts from each page
-    return postsData.pages.flatMap((page) => {
-      // Check if page.data exists and has data array
+    // Extract all posts from all pages
+    const allExtractedPosts = postsData.pages.flatMap((page) => {
       if (page.data && Array.isArray(page.data.data)) {
         return page.data.data;
       }
       return [];
     });
+
+    // Deduplicate based on post IDs
+    const uniquePosts = [];
+    const seenIds = new Set();
+
+    for (const post of allExtractedPosts) {
+      if (!seenIds.has(post.id)) {
+        seenIds.add(post.id);
+        uniquePosts.push(post);
+      }
+    }
+
+    return uniquePosts;
   }, [postsData]);
 
   const formatPostForDisplay = useCallback(
@@ -146,6 +173,8 @@ const Profile = () => {
       </MainLayout>
     );
   }
+
+  console.log("postData", postsData);
 
   // Determine if this is the current user's profile
   const isOwnProfile = parseInt(currentUser?.id) === parseInt(userId);
@@ -218,6 +247,7 @@ const Profile = () => {
                 <ProfileTabs
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
+                  currentUser={userProfile.data}
                 />
               </div>
 
@@ -258,7 +288,9 @@ const Profile = () => {
                         <div className="space-y-0 divide-y divide-gray-200 dark:divide-gray-700">
                           {displayPosts.map((post, index) => {
                             // Ensure a unique key with string conversion
-                            const postKey = `post-${post.id || index}`;
+                            const postKey = post.id
+                              ? `post-id-${post.id}`
+                              : `post-index-${index}`;
 
                             if (index === displayPosts.length - 1) {
                               return (

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { postAPI } from "../../services/api";
+import { commentAPI, postAPI } from "../../services/api";
 import { formatDistanceToNow } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,13 +10,9 @@ import { z } from "zod";
 import Avatar from "../common/Avatar";
 
 // Import icons (assuming you're using heroicons)
-import {
-  HeartIcon,
-  ChatBubbleLeftIcon,
-  ShareIcon,
-  BookmarkIcon,
-} from "@heroicons/react/24/outline";
+import { HeartIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+import CommentItem from "./CommentItem";
 
 const commentSchema = z.object({
   content: z
@@ -73,6 +69,14 @@ const PostCard = ({ post }) => {
   const onSubmit = (data) => {
     commentMutation.mutate({ content: data.content });
   };
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId) => commentAPI.deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+    },
+  });
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md">
@@ -175,11 +179,6 @@ const PostCard = ({ post }) => {
           <ChatBubbleLeftIcon className="h-5 w-5" />
           <span className="text-sm font-medium">Comment</span>
         </button>
-
-        <button className="hidden sm:flex items-center justify-center py-2 px-4 space-x-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors">
-          <ShareIcon className="h-5 w-5" />
-          <span className="text-sm font-medium">Share</span>
-        </button>
       </div>
 
       {/* Comments section */}
@@ -239,36 +238,10 @@ const PostCard = ({ post }) => {
             {post.comments && post.comments.length > 0 ? (
               post.comments.map((comment) => (
                 <div key={comment.id} className="flex items-start space-x-2">
-                  <Link
-                    to={`/profile/${comment.author.id}`}
-                    className="flex-shrink-0 mt-1"
-                  >
-                    <Avatar
-                      src={comment.author.profilePicUrl}
-                      alt={`${comment.author.firstName} ${comment.author.lastName}`}
-                      size="sm"
-                    />
-                  </Link>
-                  <div className="flex-1 group">
-                    <div className="bg-white dark:bg-gray-700 rounded-2xl px-3 py-2 shadow-sm">
-                      <Link
-                        to={`/profile/${comment.author.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:underline"
-                      >
-                        {comment.author.username}
-                      </Link>
-                      <p className="text-gray-800 dark:text-gray-200 text-sm break-words">
-                        {comment.content}
-                      </p>
-                    </div>
-                    <div className="ml-2 mt-1 flex items-center space-x-4 text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">
-                        {formatDistanceToNow(new Date(comment.createdAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  </div>
+                  <CommentItem
+                    comment={comment}
+                    deleteCommentMutation={deleteCommentMutation}
+                  />
                 </div>
               ))
             ) : (

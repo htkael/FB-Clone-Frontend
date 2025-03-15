@@ -29,14 +29,11 @@ const Header = ({ openModal }) => {
   return (
     <header className="sticky top-0 z-10 shadow-sm">
       <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          <Link
-            to="/feed"
-            className="flex items-center gap-3 hover:opacity-90 transition-opacity"
-          >
-            <Logo />
-            <span className="self-center text-xl font-semibold text-gray-800 whitespace-nowrap dark:text-white">
-              Climbing Connection
+        <div className="flex-1 flex justify-between items-center mx-auto max-w-screen-xl px-1 xs:px-4">
+          <Link to="/feed" className="flex items-center gap-1 xs:gap-2">
+            <Logo className="h-7 w-7 xs:h-8 xs:w-8" />
+            <span className="self-center text-base xs:text-xl font-semibold whitespace-nowrap dark:text-white">
+              CC
             </span>
           </Link>
 
@@ -70,7 +67,7 @@ const Header = ({ openModal }) => {
                   {/* Dropdown menu */}
                   {userMenuOpen && (
                     <div
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700"
+                      className="absolute right-0 xs:right-0 left-auto xs:left-auto mt-2 w-48 max-w-[calc(100vw-1rem)] bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100 dark:border-gray-700 dark:bg-gray-800"
                       onMouseLeave={() => setUserMenuOpen(false)}
                     >
                       <Link

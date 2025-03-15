@@ -9,13 +9,7 @@ import Avatar from "../common/Avatar";
 import Button from "../common/Button";
 
 // Import icons (assuming you're using heroicons)
-import {
-  PhotoIcon,
-  XMarkIcon,
-  FaceSmileIcon,
-  MapPinIcon,
-  TagIcon,
-} from "@heroicons/react/24/outline";
+import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const postSchema = z.object({
   content: z
@@ -100,6 +94,31 @@ const PostForm = ({ onSubmit, isLoading }) => {
   const isSubmitting = isLoading || createPostMutation.isLoading;
   const hasContent = getValues("content")?.trim().length > 0 || image;
 
+  const contentProps = register("content", {
+    onChange: (e) => setCharCount(e.target.value.length),
+  });
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+
+      // Get current content
+      const content = getValues("content");
+
+      // Only submit if there's content
+      if (content && content.trim().length > 0) {
+        handleSubmit(handleFormSubmit)(e);
+
+        // Reset the form after submission
+        reset();
+        setCharCount(0);
+
+        // Unfocus the textarea
+        e.target.blur();
+      }
+    }
+  };
+
   return (
     <div>
       <div className="flex items-start space-x-3">
@@ -121,6 +140,8 @@ const PostForm = ({ onSubmit, isLoading }) => {
                 } rounded-xl p-4 pt-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 dark:text-white transition-colors resize-none`}
                 placeholder="What's on your mind?"
                 rows="3"
+                {...contentProps}
+                onKeyDown={handleKeyDown}
                 {...register("content", {
                   onChange: (e) => setCharCount(e.target.value.length),
                 })}

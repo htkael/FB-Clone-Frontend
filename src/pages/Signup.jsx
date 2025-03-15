@@ -2,19 +2,21 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
+import Input from "../components/common/Input";
+import Button from "../components/common/Button";
 
 // Import icons
 import {
   EnvelopeIcon,
   LockClosedIcon,
   UserIcon,
+  AtSymbolIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
-
-import Input from "../components/common/Input";
-import Button from "../components/common/Button";
 
 const signupSchema = z
   .object({
@@ -44,7 +46,6 @@ const signupSchema = z
 
 function Signup() {
   const { signup, guestLogin } = useAuth();
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -59,6 +60,45 @@ function Signup() {
     resolver: zodResolver(signupSchema),
     mode: "onChange",
   });
+
+  const onSubmit = async (data) => {
+    setApiError("");
+    setIsSubmitting(true);
+    try {
+      const result = await signup(data);
+      if (result.success) {
+        reset();
+      }
+
+      if (!result.success) {
+        if (result.errors && Array.isArray(result.errors)) {
+          setApiError(result.errors[0]?.msg || "Registration failed");
+        } else {
+          setApiError(result.message || "Registration failed");
+        }
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setApiError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await guestLogin();
+      if (!result.success) {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setApiError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Animation variants
   const containerVariants = {
@@ -84,46 +124,6 @@ function Signup() {
       opacity: 1,
       transition: { type: "spring", stiffness: 100 },
     },
-  };
-
-  const onSubmit = async (data) => {
-    setApiError("");
-    setIsSubmitting(true);
-    try {
-      const result = await signup(data);
-      if (result.success) {
-        reset();
-        navigate("/feed");
-      } else {
-        if (result.errors && Array.isArray(result.errors)) {
-          setApiError(result.errors[0]?.msg || "Registration failed");
-        } else {
-          setApiError(result.message || "Registration failed");
-        }
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      setApiError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await guestLogin();
-      if (!result.success) {
-        setApiError("An unexpected error occurred. Please try again.");
-      } else {
-        navigate("/feed");
-      }
-    } catch (err) {
-      console.error("Registration error:", err);
-      setApiError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -155,7 +155,7 @@ function Signup() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 p-4 rounded-r-lg"
+              className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 p-4 rounded-r-lg"
             >
               <p className="text-sm text-red-700 dark:text-red-400">
                 {apiError}
@@ -164,131 +164,143 @@ function Signup() {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-              <div>
-                <Input
-                  label="First name"
-                  name="firstName"
-                  id="firstName"
-                  type="text"
-                  register={register}
-                  error={errors.firstName?.message}
-                  autoComplete="given-name"
-                  leftIcon={<UserIcon className="h-5 w-5 text-gray-400" />}
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Last name"
-                  name="lastName"
-                  id="lastName"
-                  type="text"
-                  register={register}
-                  error={errors.lastName?.message}
-                  autoComplete="family-name"
-                  leftIcon={<UserIcon className="h-5 w-5 text-gray-400" />}
-                />
-              </div>
-            </div>
-
-            <div>
+            <div className="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2">
               <Input
-                label="Email"
-                name="email"
-                id="email"
-                type="email"
-                register={register}
-                error={errors.email?.message}
-                autoComplete="email"
-                leftIcon={<EnvelopeIcon className="h-5 w-5 text-gray-400" />}
-              />
-            </div>
-
-            <div>
-              <Input
-                label="Username"
-                name="username"
-                id="username"
+                label="First name"
+                name="firstName"
+                id="firstName"
                 type="text"
-                register={register}
-                error={errors.username?.message}
-                autoComplete="username"
+                required
+                autoComplete="given-name"
                 leftIcon={<UserIcon className="h-5 w-5 text-gray-400" />}
+                error={errors.firstName?.message}
+                {...register("firstName")}
+              />
+
+              <Input
+                label="Last name"
+                name="lastName"
+                id="lastName"
+                type="text"
+                required
+                autoComplete="family-name"
+                leftIcon={<UserIcon className="h-5 w-5 text-gray-400" />}
+                error={errors.lastName?.message}
+                {...register("lastName")}
               />
             </div>
 
+            <Input
+              label="Email"
+              name="email"
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              leftIcon={<EnvelopeIcon className="h-5 w-5 text-gray-400" />}
+              error={errors.email?.message}
+              {...register("email")}
+            />
+
+            <Input
+              label="Username"
+              name="username"
+              id="username"
+              type="text"
+              required
+              autoComplete="username"
+              leftIcon={<AtSymbolIcon className="h-5 w-5 text-gray-400" />}
+              error={errors.username?.message}
+              {...register("username")}
+            />
+
             <div>
-              <Input
-                label="Password"
-                name="password"
-                id="password"
-                type={showPassword ? "text" : "password"}
-                register={register}
-                error={errors.password?.message}
-                autoComplete="new-password"
-                leftIcon={<LockClosedIcon className="h-5 w-5 text-gray-400" />}
-                rightIcon={
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-gray-500"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
-                          clipRule="evenodd"
-                        />
-                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                      </svg>
-                    )}
-                  </button>
-                }
-              />
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              >
+                Password
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 dark:text-gray-400">
+                  <LockClosedIcon className="h-5 w-5" />
+                </div>
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  className={`block w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm 
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    bg-white dark:bg-gray-700 text-black dark:text-white 
+                    ${
+                      errors.password
+                        ? "border-red-500 dark:border-red-400"
+                        : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <Input
-                label="Confirm Password"
-                name="password_conf"
-                id="password_conf"
-                type={showPassword ? "text" : "password"}
-                register={register}
-                error={errors.password_conf?.message}
-                autoComplete="new-password"
-                leftIcon={<LockClosedIcon className="h-5 w-5 text-gray-400" />}
-              />
+              <label
+                htmlFor="password_conf"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              >
+                Confirm Password
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 dark:text-gray-400">
+                  <LockClosedIcon className="h-5 w-5" />
+                </div>
+                <input
+                  id="password_conf"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  className={`block w-full pl-10 py-2 border rounded-lg shadow-sm 
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    bg-white dark:bg-gray-700 text-black dark:text-white
+                    ${
+                      errors.password_conf
+                        ? "border-red-500 dark:border-red-400"
+                        : "border-gray-300 dark:border-gray-600"
+                    }`}
+                  {...register("password_conf")}
+                />
+              </div>
+              {errors.password_conf && (
+                <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                  {errors.password_conf.message}
+                </p>
+              )}
             </div>
 
             <div>
               <Button
                 type="submit"
-                disabled={isSubmitting || !isValid}
-                isLoading={isSubmitting}
                 variant="primary"
                 size="lg"
                 fullWidth
+                disabled={isSubmitting || !isValid}
+                isLoading={isSubmitting}
               >
                 Sign up
               </Button>
@@ -310,11 +322,11 @@ function Signup() {
             <div className="mt-6">
               <Button
                 onClick={handleGuestLogin}
-                disabled={isLoading}
-                isLoading={isLoading}
                 variant="success"
                 size="lg"
                 fullWidth
+                disabled={isLoading}
+                isLoading={isLoading}
                 icon={<UserIcon className="w-5 h-5" />}
               >
                 Guest Access

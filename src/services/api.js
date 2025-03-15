@@ -47,7 +47,8 @@ export const postAPI = {
 export const userAPI = {
   getUsers: () => api.get("/users"),
   searchUser: (params) => api.get("/users/search", { params }),
-  getPostsFromUser: (userId) => api.get(`/users/${userId}/posts`),
+  getPostsFromUser: (userId, params = {}) =>
+    api.get(`/users/${userId}/posts`, { params }),
   getCommentsFromUser: (userId) => api.get(`/users/${userId}/comments`),
   getLikesFromUser: (userId) => api.get(`/users/${userId}/likes`),
   getFriendsFromUser: (userId) => api.get(`/users/${userId}/friends`),
@@ -77,8 +78,8 @@ export const conversationAPI = {
   getUnread: () => api.get("/conversations/unread"),
   markConversationAsRead: (conversationId) =>
     api.put(`/conversations/${conversationId}/read`),
-  getConversation: (conversationId) =>
-    api.get(`/conversations/${conversationId}`),
+  getConversation: (conversationId, params = {}) =>
+    api.get(`/conversations/${conversationId}`, {params}),
   editTitle: (conversationId, content) =>
     api.put(`/conversations/${conversationId}`, content),
   addParticipant: (conversationId, userId) =>
@@ -111,7 +112,7 @@ export const messageAPI = {
   editMessage: (conversationId, messageId, content) =>
     api.put(`/conversations/${conversationId}/messages/${messageId}`, content),
   deleteMessage: (conversationId, messageId) =>
-    api.put(`/conversations/${conversationId}/messages/${messageId}`),
+    api.delete(`/conversations/${conversationId}/messages/${messageId}`),
 };
 
 export const notificationAPI = {

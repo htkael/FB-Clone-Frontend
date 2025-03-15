@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useLocation } from "react-router-dom";
+import MobileNavBar from "./MobileNavbar";
 
 import AnimatedLayout from "./AnimatedLayout";
 
@@ -18,11 +19,12 @@ const MainLayout = ({ children, openModal }) => {
       <div className="flex flex-1">
         <Sidebar />
         <AnimatedLayout>
-          <main className="flex-1 py-6 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto w-full overflow-y-auto">
+          <main className="flex-1 py-6 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto w-full overflow-y-auto xs:py-2 ">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </AnimatedLayout>
       </div>
+      <MobileNavBar />
     </div>
   );
 };

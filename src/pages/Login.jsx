@@ -11,6 +11,8 @@ import {
   EnvelopeIcon,
   LockClosedIcon,
   UserIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 const Login = () => {
@@ -23,6 +25,7 @@ const Login = () => {
   const { login, guestLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const from = location.state?.from || "/feed";
 
   const handleChange = (e) => {
@@ -187,13 +190,27 @@ const Login = () => {
                 label="Password"
                 name="password"
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={credentials.password}
                 onChange={handleChange}
                 error={errors.password}
                 leftIcon={<LockClosedIcon className="h-5 w-5 text-gray-400" />}
                 autoComplete="current-password"
+                rightIconClickable={true}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                  >
+                    {showPassword ? (
+                      <EyeIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                }
               />
             </div>
 

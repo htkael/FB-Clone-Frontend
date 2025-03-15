@@ -18,6 +18,7 @@ const variants = {
 };
 
 const sizes = {
+  xxs: "py-0.5 px-1 text-[10px]",
   xs: "py-1 px-2 text-xs",
   sm: "py-1.5 px-3 text-sm",
   md: "py-2 px-4 text-sm",

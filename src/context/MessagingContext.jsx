@@ -39,20 +39,27 @@ function messagingReducer(state, action) {
       return { ...state, activeConversation: action.payload };
     case "FETCH_MESSAGES_START":
       return { ...state, loadingMessages: true };
-    case "FETCH_MESSAGES_SUCCESS":
+    case "FETCH_MESSAGES_SUCCESS": {
+      const { conversationId, messages, pagination } = action.payload;
+
+      // Ensure uniqueness by message ID
+      const uniqueMessages = [
+        ...new Map(messages.map((message) => [message.id, message])).values(),
+      ];
+
       return {
         ...state,
         messages: {
           ...state.messages,
-          [action.payload.conversationId]: action.payload.messages,
+          [conversationId]: uniqueMessages,
         },
         messagePagination: {
           ...state.messagePagination,
-          [action.payload.conversationId]: action.payload.pagination,
+          [conversationId]: pagination,
         },
         loadingMessages: false,
-        error: false,
       };
+    }
     case "FETCH_MESSAGES_ERROR":
       return { ...state, loadingMessages: false, error: action.payload };
     case "ADD_MESSAGE": {
@@ -214,11 +221,10 @@ export const MessagingProvider = ({ children }) => {
     async (conversationId, page = 1, limit = 30) => {
       dispatch({ type: "FETCH_MESSAGES_START" });
       try {
-        const response = await conversationAPI.getConversation(
-          conversationId,
+        const response = await conversationAPI.getConversation(conversationId, {
           page,
-          limit
-        );
+          limit,
+        });
         const conversationData = response.data.data;
 
         // Update the conversation in the state
@@ -240,6 +246,16 @@ export const MessagingProvider = ({ children }) => {
         return conversationData;
       } catch (error) {
         console.error("Error fetching conversation:", error);
+
+        // CRITICAL FIX: Dispatch error action to reset loading state
+        dispatch({
+          type: "FETCH_MESSAGES_ERROR",
+          payload: {
+            conversationId,
+            error: error.message || "Failed to fetch conversation",
+          },
+        });
+
         return null;
       }
     },
@@ -252,6 +268,7 @@ export const MessagingProvider = ({ children }) => {
       const pagination = state.messagePagination[conversationId];
       if (!pagination || !pagination.hasNext) return false;
       const nextPage = pagination.page + 1;
+
       try {
         const response = await conversationAPI.getConversation(conversationId, {
           page: nextPage,
@@ -259,6 +276,7 @@ export const MessagingProvider = ({ children }) => {
         const newMessages = response.data.data.messages || [];
         const currentMessages = state.messages[conversationId] || [];
 
+        // Backend returns newest first, so append new (older) messages at the end
         dispatch({
           type: "FETCH_MESSAGES_SUCCESS",
           payload: {
@@ -267,9 +285,13 @@ export const MessagingProvider = ({ children }) => {
             pagination: response.data.meta,
           },
         });
-        return true;
+        return newMessages.length > 0;
       } catch (err) {
         console.error("Error loading more messages", err);
+        dispatch({
+          type: "FETCH_MESSAGES_ERROR",
+          payload: { conversationId, error: err.message },
+        });
         return false;
       }
     },
@@ -442,7 +464,10 @@ export const MessagingProvider = ({ children }) => {
 
   const deleteMessage = useCallback(async (conversationId, messageId) => {
     try {
-      await messageAPI.deleteMessage(conversationId, messageId);
+      const response = await messageAPI.deleteMessage(
+        conversationId,
+        messageId
+      );
 
       dispatch({
         type: "DELETE_MESSAGE",
@@ -452,9 +477,30 @@ export const MessagingProvider = ({ children }) => {
         },
       });
 
+      console.log("Delete response:", response);
+
       return true;
     } catch (error) {
-      console.error("Error deleting message:", error);
+      console.error("Error deleting message:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+
+      // Show user-friendly error
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        alert(error.response.data.message || "Failed to delete message");
+      } else if (error.request) {
+        // The request was made but no response was received
+        alert("No response received from server");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        alert("Error setting up the request");
+      }
+
       return false;
     }
   }, []);
@@ -591,6 +637,7 @@ export const MessagingProvider = ({ children }) => {
       0
     );
   }, [state.unreadCounts]);
+  // console.log("State", state);
 
   return (
     <MessagingContext.Provider

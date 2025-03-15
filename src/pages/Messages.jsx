@@ -1,28 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import ConversationList from "../components/messages/ConversationList";
 import MessageThread from "../components/messages/MessageThread";
 import NewConversationModal from "../components/messages/NewConversationModal";
 import { useMessaging } from "../context/MessagingContext";
-import EmptyState from "../components/common/EmptyState";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import SettingsModal from "../components/settings/SettingsModal";
 
-// Import icons (assuming you're using heroicons)
+// Import icons
 import {
   ChatBubbleLeftRightIcon,
   PencilSquareIcon,
   UserGroupIcon,
-  PlusIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 
 const MessagingPage = () => {
   const [isNewConversationModalOpen, setIsNewConversationModalOpen] =
     useState(false);
   const [isGroupChat, setIsGroupChat] = useState(false);
-  const { getTotalUnreadCount } = useMessaging();
+  const { getTotalUnreadCount, activeConversation, setActiveConversation } =
+    useMessaging();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showConversationList, setShowConversationList] = useState(true);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  // Check for mobile view on mount and window resize
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobileView();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobileView);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobileView);
+  }, []);
+
+  // When a conversation is selected on mobile, hide the conversation list
+  const handleConversationSelect = (conversation) => {
+    setActiveConversation(conversation);
+    if (isMobileView) {
+      setShowConversationList(false);
+    }
+  };
+
+  // Go back to conversation list on mobile
+  const handleBackToList = () => {
+    setShowConversationList(true);
+  };
 
   const openNewConversationModal = (isGroup = false) => {
     setIsGroupChat(isGroup);
@@ -37,56 +68,82 @@ const MessagingPage = () => {
 
   return (
     <MainLayout openModal={openSettingsModal}>
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="flex items-center text-2xl font-bold text-gray-900 dark:text-white">
-            <ChatBubbleLeftRightIcon className="w-7 h-7 mr-2 text-blue-500 dark:text-blue-400" />
-            Messages
+      {/* Header */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center">
+          <h1 className="flex items-center text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-7 sm:h-7 mr-1.5 sm:mr-2 text-blue-500 dark:text-blue-400" />
+            <span className="hidden sm:inline">Messages</span>
             {totalUnread > 0 && (
               <Badge
                 className="ml-2"
                 count={totalUnread}
                 variant="danger"
-                size="md"
+                size="sm"
               />
             )}
           </h1>
-          <div className="flex space-x-3">
+          <div className="flex space-x-1.5 sm:space-x-3">
             <Button
               onClick={() => openNewConversationModal(false)}
               variant="primary"
-              size="md"
+              size="xxs"
               className="shadow-sm"
-              icon={<PencilSquareIcon className="w-5 h-5" />}
+              icon={<PencilSquareIcon className="w-4 h-4" />}
             >
-              New Message
+              <span className="hidden xs:inline">New Message</span>
+              <span className="xs:hidden">New</span>
             </Button>
             <Button
               onClick={() => openNewConversationModal(true)}
               variant="success"
-              size="md"
+              size="xxs"
               className="shadow-sm"
-              icon={<UserGroupIcon className="w-5 h-5" />}
+              icon={<UserGroupIcon className="w-4 h-4" />}
             >
-              New Group
+              <span className="hidden xs:inline">New Group</span>
+              <span className="xs:hidden">Group</span>
             </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-14rem)] bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
-          {/* Conversations List */}
-          <div className="md:col-span-1 h-full overflow-hidden border-r border-gray-200 dark:border-gray-700">
-            <ConversationList />
-          </div>
-
-          {/* Message Thread */}
-          <div className="md:col-span-2 h-full overflow-hidden bg-gray-50 dark:bg-gray-800/50">
-            <MessageThread />
           </div>
         </div>
       </div>
 
-      {/* New Conversation Modal */}
+      {/* Content */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-[calc(100vh-200px)] md:h-[calc(100vh-200px)] mb-16 md:mb-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 h-full">
+          {/* Mobile Back Button */}
+
+          {/* Conversation List */}
+          <div
+            className={`border-r border-gray-200 dark:border-gray-700 h-full overflow-hidden ${
+              isMobileView && activeConversation && !showConversationList
+                ? "hidden md:block xs:h-[80%]"
+                : "block"
+            }`}
+          >
+            <div className="h-full overflow-y-auto">
+              <ConversationList
+                onSelectConversation={handleConversationSelect}
+              />
+            </div>
+          </div>
+
+          {/* Message Thread */}
+          <div
+            className={`bg-gray-50 dark:bg-gray-800/50 h-full overflow-hidden md:col-span-2 ${
+              isMobileView && (!activeConversation || showConversationList)
+                ? "hidden md:block"
+                : "block"
+            }`}
+          >
+            <div className="h-full overflow-y-auto">
+              <MessageThread onBackClick={handleBackToList} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
       {isNewConversationModalOpen && (
         <NewConversationModal
           isOpen={isNewConversationModalOpen}
