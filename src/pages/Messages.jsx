@@ -83,26 +83,30 @@ const MessagingPage = () => {
               />
             )}
           </h1>
-          <div className="flex space-x-1.5 sm:space-x-3">
+          <div className="flex gap-2 sm:gap-3">
             <Button
               onClick={() => openNewConversationModal(false)}
               variant="primary"
               size="xxs"
-              className="shadow-sm"
-              icon={<PencilSquareIcon className="w-4 h-4" />}
+              className="shadow-sm min-w-0 sm:min-w-[110px] whitespace-nowrap text-xs sm:text-sm transition-all duration-200"
+              icon={
+                <PencilSquareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              }
             >
-              <span className="hidden xs:inline">New Message</span>
-              <span className="xs:hidden">New</span>
+              <span className="hidden xxs:inline xs:inline">New Message</span>
+              <span className="xxs:hidden xs:hidden">New</span>
             </Button>
             <Button
               onClick={() => openNewConversationModal(true)}
               variant="success"
               size="xxs"
-              className="shadow-sm"
-              icon={<UserGroupIcon className="w-4 h-4" />}
+              className="shadow-sm min-w-0 sm:min-w-[110px] whitespace-nowrap text-xs sm:text-sm transition-all duration-200"
+              icon={
+                <UserGroupIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              }
             >
-              <span className="hidden xs:inline">New Group</span>
-              <span className="xs:hidden">Group</span>
+              <span className="hidden xxs:inline xs:inline">New Group</span>
+              <span className="xxs:hidden xs:hidden">Group</span>
             </Button>
           </div>
         </div>
