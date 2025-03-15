@@ -117,15 +117,11 @@ export const SocketProvider = ({ children }) => {
         return false;
       }
 
-      console.log(
-        `Veryifying if user is online with id ${userId} online users ${JSON.stringify(
-          onlineUsers
-        )}
-        `
-      );
+      // Ensure userId is a string for consistent comparison
+      const userIdStr = userId.toString();
 
-      // Check if the user is in the onlineUsers object
-      return !onlineUsers[userId];
+      // Check if the user is in the onlineUsers object - return true if they ARE in the object
+      return Boolean(onlineUsers[userIdStr]);
     },
     [onlineUsers]
   );

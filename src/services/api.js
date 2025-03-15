@@ -41,7 +41,7 @@ export const postAPI = {
   getPost: (postId) => api.get(`/posts/${postId}`),
   editPost: (postId, content) => api.put(`/posts/${postId}`, content),
   deletePost: (postId) => api.delete(`/posts/${postId}`),
-  getUserFeed: () => api.get("/feed"),
+  getUserFeed: (params = {}) => api.get("/feed", { params }),
 };
 
 export const userAPI = {
@@ -79,7 +79,7 @@ export const conversationAPI = {
   markConversationAsRead: (conversationId) =>
     api.put(`/conversations/${conversationId}/read`),
   getConversation: (conversationId, params = {}) =>
-    api.get(`/conversations/${conversationId}`, {params}),
+    api.get(`/conversations/${conversationId}`, { params }),
   editTitle: (conversationId, content) =>
     api.put(`/conversations/${conversationId}`, content),
   addParticipant: (conversationId, userId) =>

@@ -428,7 +428,7 @@ const MessageThread = ({ onBackClick }) => {
                     src={participant.user?.profilePicUrl}
                     alt={participant.user?.username}
                     size="xs"
-                    isOnline={isUserOnline?.(participant.user?.id)}
+                    isOnline={isUserOnline(participant.user?.id)}
                   />
                 </Link>
                 <span className="ml-1 sm:ml-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-[80px] sm:max-w-full">

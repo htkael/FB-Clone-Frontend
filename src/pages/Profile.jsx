@@ -193,6 +193,7 @@ const Profile = () => {
             <>
               {/* Profile Header with Cover Photo */}
               <ProfileHeader
+                user={userProfile.data}
                 firstName={userProfile.data.firstName}
                 lastName={userProfile.data.lastName}
                 username={userProfile.data.username}

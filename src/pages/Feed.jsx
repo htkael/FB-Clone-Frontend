@@ -30,46 +30,47 @@ const Feed = () => {
   } = useQuery({
     queryKey: ["feed", page],
     queryFn: async () => {
-      const response = await postAPI.getUserFeed(page);
-      return response;
+      const response = await postAPI.getUserFeed({ page });
+      console.log("response", response);
+      return response.data; // Make sure we're returning response.data here
     },
   });
 
-  // Update posts state when query data changes
   useEffect(() => {
-    if (isSuccess && feedResponse?.data) {
+    if (isSuccess && feedResponse) {
+      const newPosts = feedResponse.data || []; // Get the posts array from data property
+
       if (page === 1) {
-        // Replace all posts when it's the first page
-        setAllPosts(feedResponse.data.data);
+        setAllPosts(newPosts);
       } else {
-        // Append posts for subsequent pages
         setAllPosts((prevPosts) => {
-          // Filter out duplicates (in case backend returns overlapping results)
-          const newPostIds = new Set(feedResponse.data.map((post) => post.id));
+          // Create a set of IDs from new posts for efficient lookup
+          const newPostIds = new Set(newPosts.map((post) => post.id));
+
+          // Filter out any posts that might be duplicates
           const filteredPrevPosts = prevPosts.filter(
             (post) => !newPostIds.has(post.id)
           );
-          return [...filteredPrevPosts, ...feedResponse.data];
+
+          // Combine previous posts with new ones
+          return [...filteredPrevPosts, ...newPosts];
         });
       }
     }
   }, [isSuccess, feedResponse, page]);
 
-  // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: postAPI.createPost,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
-      setPage(1); // Reset to first page after creating a post
+      setPage(1);
     },
   });
 
-  // Handle creating a new post
   const handleCreatePost = (postData) => {
     createPostMutation.mutate(postData);
   };
 
-  // Infinite scroll handler using Intersection Observer
   const handleObserver = useCallback(
     (entries) => {
       const target = entries[0];
@@ -85,7 +86,6 @@ const Feed = () => {
     [isLoading, isFetching, feedResponse?.meta?.hasNext]
   );
 
-  // Set up the intersection observer
   useEffect(() => {
     const options = {
       root: null,
@@ -131,12 +131,18 @@ const Feed = () => {
     setIsSettingsOpen(true);
   };
 
-  // Handle manual refresh
   const handleRefresh = () => {
     setPage(1); // Reset to first page
     setAllPosts([]); // Clear current posts
     refetch(); // Refetch the data
   };
+
+  // Debug logging to help identify issues
+  useEffect(() => {
+    console.log("Page:", page);
+    console.log("hasNext:", feedResponse?.meta?.hasNext);
+    console.log("All posts count:", allPosts.length);
+  }, [page, feedResponse, allPosts]);
 
   return (
     <MainLayout openModal={openSettingsModal}>
