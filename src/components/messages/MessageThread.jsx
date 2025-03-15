@@ -65,23 +65,6 @@ const MessageThread = ({ onBackClick }) => {
   // Get pagination info with fallback if it's missing
   const pagination = conversationId ? messagePagination[conversationId] : null;
 
-  // Create a fallback pagination object if it's missing but we know there are more messages
-  const totalMessageCount = activeConversation?._count?.messages || 0;
-  const effectivePagination =
-    pagination ||
-    (totalMessageCount > sortedMessages.length
-      ? {
-          page: 1,
-          limit: 30,
-          total: totalMessageCount,
-          totalPages: Math.ceil(totalMessageCount / 30),
-          hasNext: sortedMessages.length < totalMessageCount,
-          hasPrevious: false,
-        }
-      : {
-          hasNext: false,
-        });
-
   const isGroupChat = activeConversation?.isGroup;
   const displayMessages = sortedMessages;
 
@@ -97,19 +80,14 @@ const MessageThread = ({ onBackClick }) => {
       }
 
       // Don't create a new observer if already loading or no more pages
-      if (loadingMessages || isLoadingMore || !effectivePagination?.hasNext) {
+      if (loadingMessages || isLoadingMore) {
         console.log("Observer not created: already loading or no more pages");
         return;
       }
 
       observer.current = new IntersectionObserver(
         (entries) => {
-          if (
-            entries[0].isIntersecting &&
-            effectivePagination?.hasNext &&
-            !isLoadingMore &&
-            !loadingMessages
-          ) {
+          if (entries[0].isIntersecting && !isLoadingMore && !loadingMessages) {
             console.log("Observer triggered: loading more messages");
             handleLoadMore();
           }
@@ -126,7 +104,7 @@ const MessageThread = ({ onBackClick }) => {
         observer.current.observe(node);
       }
     },
-    [effectivePagination?.hasNext, loadingMessages, isLoadingMore]
+    [loadingMessages, isLoadingMore]
   );
 
   // Improved handleLoadMore function
@@ -145,11 +123,6 @@ const MessageThread = ({ onBackClick }) => {
 
     if (loadingMessages) {
       console.log("Messages are loading, aborting load");
-      return;
-    }
-
-    if (!effectivePagination?.hasNext) {
-      console.log("No more pages (hasNext is false), aborting load");
       return;
     }
 
@@ -228,16 +201,6 @@ const MessageThread = ({ onBackClick }) => {
   ]);
 
   // Debug info for troubleshooting
-  useEffect(() => {
-    console.log("Messages:", displayMessages.length);
-    console.log("Pagination:", effectivePagination);
-    console.log("Loading states:", { isLoadingMore, loadingMessages });
-  }, [
-    displayMessages.length,
-    effectivePagination,
-    isLoadingMore,
-    loadingMessages,
-  ]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -360,7 +323,7 @@ const MessageThread = ({ onBackClick }) => {
       (p) => p.user?.id !== parseInt(user?.id)
     )?.user;
 
-    const isOnline = isUserOnline?.(otherParticipant?.id);
+    const isOnline = isUserOnline(otherParticipant?.id);
 
     headerContent = (
       <div className="flex items-center space-x-2 sm:space-x-3">

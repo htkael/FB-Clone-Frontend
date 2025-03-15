@@ -8,12 +8,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
 import Badge from "../common/Badge";
-import { useNotifications } from "../../context/NotificationContext";
 
 const MobileNavBar = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const { unreadCount } = useNotifications();
 
   const isActive = (path) => location.pathname === path;
 
@@ -67,27 +65,6 @@ const MobileNavBar = () => {
           <UserGroupIcon className="w-6 h-6" />
           <span className="text-xs mt-1">Users</span>
         </Link>
-
-        <div className="relative flex flex-col items-center justify-center w-full h-full">
-          <Link
-            to="#"
-            className="text-gray-600 dark:text-gray-400 flex flex-col items-center relative"
-            onClick={(e) => {
-              e.preventDefault();
-              // Toggle notifications dropdown
-            }}
-          >
-            <div className="relative">
-              <BellIcon className="w-6 h-6" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2">
-                  <Badge count={unreadCount} size="xs" variant="danger" />
-                </span>
-              )}
-            </div>
-            <span className="text-xs mt-1">Alerts</span>
-          </Link>
-        </div>
       </div>
     </div>
   );

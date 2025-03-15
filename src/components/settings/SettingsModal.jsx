@@ -43,7 +43,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
         <div className="pt-4 border-t border-gray-200">
           {!showDeleteConfirm ? (
             <button
-              className="text-red-600 hover:text-red-800 font-medium"
+              className="dark:text-red-300 text-red-600 hover:text-red-800 font-medium"
               onClick={() => setShowDeleteConfirm(true)}
             >
               Delete Account

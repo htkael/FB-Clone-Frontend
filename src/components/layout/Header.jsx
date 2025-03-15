@@ -32,14 +32,14 @@ const Header = ({ openModal }) => {
         <div className="flex-1 flex justify-between items-center mx-auto max-w-screen-xl px-1 xs:px-4">
           <Link to="/feed" className="flex items-center gap-1 xs:gap-2">
             <Logo className="h-7 w-7 xs:h-8 xs:w-8" />
-            <span className="self-center text-base xs:text-xl font-semibold whitespace-nowrap dark:text-white">
-              CC
+            <span className="self-center text-base xs:text-[0.9rem] sm:text-xl md:text-2xl lg:text-3xl font-semibold whitespace-nowrap dark:text-white">
+              Climbing Connection
             </span>
           </Link>
 
           <div className="flex items-center lg:order-2 gap-3">
             {user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 xs:gap-0">
                 {/* Notification Button */}
                 <NotificationButton />
 

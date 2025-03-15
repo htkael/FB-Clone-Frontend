@@ -60,7 +60,7 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 mt-2 w-[calc(100vw-1rem)] xs:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20 overflow-hidden border border-gray-200 dark:border-gray-700"
+      className="absolute right-0 mt-2 w-[calc(100vw-1rem)] xs:w-60 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20 overflow-hidden border border-gray-200 dark:border-gray-700"
       style={{ maxHeight: "calc(100vh - 100px)" }}
     >
       <div className="flex justify-between items-center px-2 xs:px-4 py-2 xs:py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 sticky top-0 z-10">
