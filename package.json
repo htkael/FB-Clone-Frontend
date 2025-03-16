@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "netlify-build": "GENERATE_SOURCEMAP=false CI= react-scripts build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
