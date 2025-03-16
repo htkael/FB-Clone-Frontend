@@ -15,6 +15,7 @@ import {
 
 const NotificationItem = ({ notification }) => {
   const { type, content, createdAt, fromUser, isRead, link } = notification;
+  console.log("notification", notification);
 
   // Get the appropriate icon and color based on notification type
   const getIconDetails = () => {
@@ -73,10 +74,10 @@ const NotificationItem = ({ notification }) => {
     // Otherwise, determine by type
     switch (type) {
       case "FRIEND_REQUEST":
-      case "FRIEND_ACCEPTED":
+      case "friend_accepted":
         // Direct to user profile if available
         return fromUser ? `/profile/${fromUser.id}` : "#";
-      case "MESSAGE":
+      case "message":
         // Direct to messages with this user if available
         return fromUser ? `/messages/${fromUser.id}` : "/messages";
       default:
