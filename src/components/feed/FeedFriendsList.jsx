@@ -2,23 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { userAPI } from "../../services/api";
 import { Link, useNavigate } from "react-router-dom";
 import ErrorFallback from "../common/ErrorFallback";
-import Avatar from "../common/Avatar";
 import Skeleton from "../common/Skeleton";
 import { useAuth } from "../../context/AuthContext";
+import Avatar from "../common/Avatar";
 
-// Import icons (assuming you're using heroicons)
 import {
   UserGroupIcon,
-  UserIcon,
   UserPlusIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 
-const FriendsList = ({ userProfile }) => {
-  const userId = userProfile.data.id;
+const FeedFriendsList = ({ userProfile }) => {
+  const userId = userProfile.id;
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const isOwnProfile = parseInt(currentUser?.id) === parseInt(userId);
-  console.log("User prof", userProfile);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["friends", userId],
@@ -42,7 +40,7 @@ const FriendsList = ({ userProfile }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 h-full">
       {/* Header with icon and count */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
           <UserGroupIcon className="w-5 h-5 mr-2 text-blue-500 dark:text-blue-400" />
           Friends
@@ -52,16 +50,24 @@ const FriendsList = ({ userProfile }) => {
             </span>
           )}
         </h2>
+        {data && data.length > 0 && (
+          <Link
+            to="/friends"
+            className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            View all
+          </Link>
+        )}
       </div>
 
-      {/* Friends grid */}
-      <div className="p-4">
+      {/* Friends list */}
+      <div className="p-0">
         {isLoading ? (
-          <FriendsGridSkeleton />
+          <FriendsListSkeleton />
         ) : data?.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {data.map((friend) => (
-              <FriendCard
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {data.slice(0, 10).map((friend) => (
+              <FriendListItem
                 key={friend.friend.id}
                 friend={friend.friend}
                 friendshipId={friend.id}
@@ -69,7 +75,7 @@ const FriendsList = ({ userProfile }) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-10">
+          <div className="text-center py-10 px-4">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 mb-4">
               <UserGroupIcon className="w-8 h-8" />
             </div>
@@ -97,69 +103,68 @@ const FriendsList = ({ userProfile }) => {
   );
 };
 
-const FriendCard = ({ friend }) => {
+const FriendListItem = ({ friend }) => {
   const fullName = [friend.firstName, friend.lastName]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all hover:shadow-md group">
-      <Link to={`/profile/${friend.id}`} className="block">
-        <div className="w-full aspect-square bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-          {friend.profilePicUrl ? (
-            <img
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              src={friend.profilePicUrl}
-              alt={`${friend.username}`}
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 text-white text-3xl font-medium">
-              {friend.username.charAt(0).toUpperCase()}
-            </div>
-          )}
-
-          {/* Optional hover overlay effect */}
-          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+    <Link
+      to={`/profile/${friend.id}`}
+      className="block hover:bg-gray-50 dark:hover:bg-gray-750"
+    >
+      <div className="flex items-center p-3">
+        <div className="flex-shrink-0 mr-3">
+          <Avatar
+            src={friend.profilePicUrl}
+            alt={`${friend.firstName} ${friend.lastName}`}
+            size="md"
+            className="ring-2 ring-white dark:ring-gray-800"
+          />
         </div>
-      </Link>
 
-      <div className="p-3">
-        <Link
-          to={`/profile/${friend.id}`}
-          className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 block truncate transition-colors"
-        >
-          {fullName || friend.username}
-        </Link>
-        {fullName && (
-          <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
-            @{friend.username}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-gray-900 dark:text-white truncate">
+            {fullName || friend.username}
           </p>
-        )}
+          {fullName && (
+            <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
+              @{friend.username}
+            </p>
+          )}
+        </div>
+
+        <div className="flex-shrink-0 ml-2">
+          <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
-const FriendsGridSkeleton = () => {
+const FriendsListSkeleton = () => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="divide-y divide-gray-100 dark:divide-gray-700">
       {[...Array(8)].map((_, i) => (
-        <div
-          key={i}
-          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
-        >
-          <div className="w-full aspect-square">
-            <Skeleton
-              variant="rectangular"
-              width="100%"
-              height="100%"
-              withShimmer
-            />
-          </div>
-          <div className="p-3">
-            <Skeleton variant="text" width="80%" className="mb-2" withShimmer />
-            <Skeleton variant="text" width="50%" withShimmer />
+        <div key={i} className="p-3">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 mr-3">
+              <Skeleton
+                variant="circular"
+                width="40px"
+                height="40px"
+                withShimmer
+              />
+            </div>
+            <div className="flex-1">
+              <Skeleton
+                variant="text"
+                width="70%"
+                className="mb-1"
+                withShimmer
+              />
+              <Skeleton variant="text" width="40%" withShimmer />
+            </div>
           </div>
         </div>
       ))}
@@ -167,4 +172,4 @@ const FriendsGridSkeleton = () => {
   );
 };
 
-export default FriendsList;
+export default FeedFriendsList;

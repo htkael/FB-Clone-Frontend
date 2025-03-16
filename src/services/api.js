@@ -91,7 +91,10 @@ export const commentAPI = {
 export const friendAPI = {
   sendRequest: (userId) => api.post(`/friends/request/${userId}`),
   deleteRequest: (userId) => api.delete(`/friends/request/${userId}`),
-  getRequests: () => api.get("/friends/requests/pending"),
+  getRequests: async () => {
+    const response = await api.get("/friends/requests/pending");
+    return response;
+  },
   acceptRequest: (requestId) => api.put(`/friends/request/${requestId}/accept`),
   rejectRequest: (requestId) => api.put(`/friends/request/${requestId}/reject`),
   removeFriend: (friendId) => api.delete(`/friends/${friendId}`),

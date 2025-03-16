@@ -15,6 +15,15 @@ const FriendButton = ({
   const [requestId, setRequestId] = useState(null);
   const { user } = useAuth();
 
+  console.log(
+    "Friend button stats",
+    userId,
+    isFriend,
+    friendshipStatus,
+    (size = "md"),
+    page
+  );
+
   // Fetch pending friend requests to get requestId if needed
   const { data: pendingRequests } = useQuery({
     queryKey: ["friend-requests", "pending"],

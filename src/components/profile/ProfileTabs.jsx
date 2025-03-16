@@ -4,17 +4,23 @@ import {
   UserIcon,
   UserGroupIcon,
   HeartIcon,
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-const ProfileTabs = ({ activeTab, setActiveTab, currentUser }) => {
-  const tabs = [
+const ProfileTabs = ({
+  activeTab,
+  setActiveTab,
+  currentUser,
+  tabs = [
     { id: "posts", label: "Posts", icon: DocumentTextIcon },
     { id: "about", label: "About", icon: UserIcon },
     { id: "friends", label: "Friends", icon: UserGroupIcon },
     { id: "likes", label: "Likes", icon: HeartIcon },
-  ];
+    { id: "requests", label: "Requests", icon: UserPlusIcon },
+  ],
+}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user.id;
@@ -29,9 +35,9 @@ const ProfileTabs = ({ activeTab, setActiveTab, currentUser }) => {
         navigate(`/profile/${userId}?tab=about`, { replace: true });
       } else if (tabId === "likes") {
         navigate(`/profile/${userId}?tab=likes`, { replace: true });
-      }
-      // For any other tab, remove the query parameter by navigating to the base URL
-      else {
+      } else if (tabId === "requests") {
+        navigate(`/profile/${userId}?tab=requests`, { replace: true });
+      } else {
         navigate(`/profile/${userId}`, { replace: true });
       }
     }

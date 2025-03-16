@@ -7,7 +7,6 @@ import {
   BellIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
-import Badge from "../common/Badge";
 
 const MobileNavBar = () => {
   const location = useLocation();

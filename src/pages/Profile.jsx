@@ -17,14 +17,19 @@ import Likes from "../components/profile/Likes";
 import Skeleton from "../components/common/Skeleton";
 import { formatDate } from "../utils/dateUtils";
 import SettingsModal from "../components/settings/SettingsModal";
+import RequestsList from "../components/profile/RequestsList";
 
 // Import icons (assuming you're using heroicons)
 import {
+  DocumentTextIcon,
   PlusIcon,
   UserIcon,
   CalendarIcon,
   EnvelopeIcon,
   InformationCircleIcon,
+  UserGroupIcon,
+  HeartIcon,
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
 
 const Profile = () => {
@@ -245,11 +250,25 @@ const Profile = () => {
                 </div>
 
                 {/* Profile Tabs */}
-                <ProfileTabs
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  currentUser={userProfile.data}
-                />
+                {isOwnProfile ? (
+                  <ProfileTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    currentUser={userProfile.data}
+                  />
+                ) : (
+                  <ProfileTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    currentUser={userProfile.data}
+                    tabs={[
+                      { id: "posts", label: "Posts", icon: DocumentTextIcon },
+                      { id: "about", label: "About", icon: UserIcon },
+                      { id: "friends", label: "Friends", icon: UserGroupIcon },
+                      { id: "likes", label: "Likes", icon: HeartIcon },
+                    ]}
+                  />
+                )}
               </div>
 
               {/* Tab Content */}
@@ -412,6 +431,15 @@ const Profile = () => {
 
               {activeTab === "friends" && (
                 <FriendsList userProfile={userProfile} />
+              )}
+              {activeTab === "requests" && isOwnProfile && (
+                <RequestsList
+                  userProfile={userProfile}
+                  isFriend={userProfile.data.relationship?.isFriend}
+                  friendshipStatus={
+                    userProfile.data.relationship?.friendshipStatus
+                  }
+                />
               )}
             </>
           )
