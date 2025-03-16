@@ -71,7 +71,7 @@ const NotificationItem = ({ notification }) => {
       case "friend_accepted":
         return fromUser ? `/profile/${fromUser.id}` : "#";
       case "message":
-        return fromUser ? `/messages/${fromUser.id}` : "/messages";
+        return fromUser ? `/messages/${fromUser.id}` : "/feed";
       default:
         return "#";
     }
