@@ -142,7 +142,6 @@ const Login = () => {
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <motion.div variants={itemVariants} className="text-center">
-          <img src="/logo.png" alt="Logo" className="mx-auto h-16 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
             Climbing Connection
           </h2>
