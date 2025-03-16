@@ -8,9 +8,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Avatar from "../common/Avatar";
+import toast from "react-hot-toast"; // Assuming you're using react-hot-toast
 
-// Import icons (assuming you're using heroicons)
-import { HeartIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
+// Import icons
+import {
+  HeartIcon,
+  ChatBubbleLeftIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
+  CheckIcon,
+} from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import CommentItem from "./CommentItem";
 
@@ -21,10 +29,23 @@ const commentSchema = z.object({
     .max(300, "Comment cannot be longer than 300 characters"),
 });
 
+const editPostSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Post content is required")
+    .max(500, "Post cannot exceed 500 characters"),
+});
+
 const PostCard = ({ post }) => {
   const [showComments, setShowComments] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Check if the current user is the author of the post
+  const isAuthor = user?.id === post.author.id;
 
   const {
     register,
@@ -36,6 +57,20 @@ const PostCard = ({ post }) => {
     mode: "onChange",
     defaultValues: {
       content: "",
+    },
+  });
+
+  // Edit post form
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    formState: { errors: editErrors, isSubmitting: isEditSubmitting },
+    setValue,
+  } = useForm({
+    resolver: zodResolver(editPostSchema),
+    mode: "onChange",
+    defaultValues: {
+      content: post.content,
     },
   });
 
@@ -62,14 +97,6 @@ const PostCard = ({ post }) => {
     },
   });
 
-  const handleLike = () => {
-    likeMutation.mutate();
-  };
-
-  const onSubmit = (data) => {
-    commentMutation.mutate({ content: data.content });
-  };
-
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => commentAPI.deleteComment(commentId),
     onSuccess: () => {
@@ -78,10 +105,86 @@ const PostCard = ({ post }) => {
     },
   });
 
+  const deletePostMutation = useMutation({
+    mutationFn: (postId) => postAPI.deletePost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      toast.success("Post deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to delete post");
+    },
+  });
+
+  const editPostMutation = useMutation({
+    mutationFn: ({ postId, postData }) => postAPI.editPost(postId, postData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      toast.success("Post updated successfully");
+      setIsEditing(false);
+      resetEditState();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update post");
+    },
+  });
+
+  const handleLike = () => {
+    likeMutation.mutate();
+  };
+
+  const onSubmit = (data) => {
+    commentMutation.mutate({ content: data.content });
+  };
+
+  const handleDeletePost = () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      deletePostMutation.mutate(post.id);
+    }
+  };
+
+  const handleEditSubmit = (data) => {
+    const formData = new FormData();
+    formData.append("content", data.content);
+
+    // Handle image deletion
+    if (removeCurrentImage) {
+      formData.append("removeImage", "true");
+    }
+
+    editPostMutation.mutate({
+      postId: post.id,
+      postData: formData,
+    });
+  };
+
+  const handleRemoveImage = () => {
+    setRemoveCurrentImage(true);
+  };
+
+  const resetEditState = () => {
+    setRemoveCurrentImage(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setValue("content", post.content); // Reset to original content
+    resetEditState();
+  };
+
+  // Check if we should display the image in edit mode
+  const showImageInEditMode = post.imageUrl && !removeCurrentImage;
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md">
+    <div
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       {/* Post header */}
-      <div className="p-4 flex items-center space-x-3">
+      <div className="p-4 flex items-center space-x-3 relative">
         <Link to={`/profile/${post.author.id}`} className="flex-shrink-0">
           <Avatar
             src={post.author.profilePicUrl}
@@ -105,17 +208,134 @@ const PostCard = ({ post }) => {
             </div>
           </div>
         </div>
+
+        {/* Post actions (visible on hover) */}
+        {isAuthor && isHovering && !isEditing && (
+          <div className="absolute top-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-md shadow-sm transition-opacity duration-200">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="p-1.5 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+              aria-label="Edit post"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleDeletePost}
+              className="p-1.5 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+              aria-label="Delete post"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Post content */}
-      <div className="px-4 pb-3">
-        <p className="text-gray-900 dark:text-white whitespace-pre-line">
-          {post.content}
-        </p>
-      </div>
+      {isEditing ? (
+        <div className="px-4 pb-3">
+          <form onSubmit={handleSubmitEdit(handleEditSubmit)}>
+            <div className="relative">
+              <textarea
+                className={`w-full border ${
+                  editErrors.content
+                    ? "border-red-300 dark:border-red-500"
+                    : "border-gray-300 dark:border-gray-600"
+                } rounded-xl p-4 pt-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 dark:text-white transition-colors resize-none`}
+                rows="3"
+                {...registerEdit("content")}
+              ></textarea>
+
+              {editErrors.content && (
+                <p className="mt-1 text-sm text-red-500 dark:text-red-400">
+                  {editErrors.content.message}
+                </p>
+              )}
+            </div>
+
+            {/* Image controls - only show delete option */}
+            {post.imageUrl && !removeCurrentImage && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                  <span className="text-sm">Remove Image</span>
+                </button>
+              </div>
+            )}
+
+            {/* Image preview in edit mode */}
+            {showImageInEditMode && (
+              <div className="relative mt-3 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <img
+                  src={post.imageUrl}
+                  alt="Post image"
+                  className="max-h-60 w-full object-contain"
+                />
+
+                {/* Overlay "Remove" button on the image */}
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-black bg-opacity-60 hover:bg-opacity-80 rounded-full p-1.5 text-white transition-colors"
+                  aria-label="Remove image"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+
+            {removeCurrentImage && (
+              <div className="mt-3 text-sm text-gray-500 dark:text-gray-400 italic">
+                Image will be removed when you save changes
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-2 mt-4">
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="flex items-center justify-center py-1.5 px-3 space-x-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">Cancel</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={isEditSubmitting || editPostMutation.isLoading}
+                className={`flex items-center justify-center py-1.5 px-3 space-x-1 ${
+                  isEditSubmitting || editPostMutation.isLoading
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
+                } text-white rounded-md transition-colors`}
+              >
+                {isEditSubmitting || editPostMutation.isLoading ? (
+                  <>
+                    <span className="animate-pulse">Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="h-4 w-4" />
+                    <span className="text-sm font-medium">Save</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className="px-4 pb-3">
+          <p className="text-gray-900 dark:text-white whitespace-pre-line">
+            {post.content}
+          </p>
+        </div>
+      )}
 
       {/* Post image (if any) */}
-      {post.imageUrl && (
+      {!isEditing && post.imageUrl && (
         <div className="pb-2">
           <img
             src={post.imageUrl}

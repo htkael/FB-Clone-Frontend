@@ -32,13 +32,20 @@ export const authAPI = {
 
 export const postAPI = {
   getPosts: () => api.get("/posts"),
-  createPost: async (formData) => {
-    const response = await api.post("/posts", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    console.log(response);
+  createPost: (postData) => {
+    const isFormData = postData instanceof FormData;
+
+    console.log("postData api", postData);
+
+    const config = isFormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : {};
+
+    return api.post("/posts", postData, config);
   },
   getComments: (postId) => api.get(`/posts/${postId}/comments`),
   postComment: (postId, content) =>
@@ -46,12 +53,18 @@ export const postAPI = {
   likePost: (postId) => api.post(`/posts/${postId}/likes`),
   getLikes: (postId) => api.get(`/posts/${postId}/likes`),
   getPost: (postId) => api.get(`/posts/${postId}`),
-  editPost: (postId, formData) =>
-    api.put(`/posts/${postId}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }),
+  editPost: (postId, postData) => {
+    const isFormData = postData instanceof FormData;
+    const config = isFormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : {};
+
+    return api.put(`/posts/${postId}`, postData, config);
+  },
   deletePost: (postId) => api.delete(`/posts/${postId}`),
   getUserFeed: (params = {}) => api.get("/feed", { params }),
 };

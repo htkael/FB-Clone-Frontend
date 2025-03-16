@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postAPI } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -7,8 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Avatar from "../common/Avatar";
 import Button from "../common/Button";
+import toast from "react-hot-toast"; // Make sure you have this installed
 
-// Import icons (assuming you're using heroicons)
+// Import icons
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const postSchema = z.object({
@@ -18,20 +19,22 @@ const postSchema = z.object({
     .max(500, "Post cannot exceed 500 characters"),
 });
 
-const PostForm = ({ onSubmit, isLoading }) => {
+const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [charCount, setCharCount] = useState(0);
+  const [postSuccess, setPostSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
-    reset,
+    reset: resetForm,
     formState: { errors },
     getValues,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(postSchema),
     mode: "onChange",
@@ -41,16 +44,26 @@ const PostForm = ({ onSubmit, isLoading }) => {
   const contentValue = watch("content");
 
   // Update character count when content changes
-  useState(() => {
+  useEffect(() => {
     setCharCount(contentValue?.length || 0);
   }, [contentValue]);
+
+  // Reset state after successful posting (with a slight delay for better UX)
+  useEffect(() => {
+    if (postSuccess) {
+      const timer = setTimeout(() => {
+        setPostSuccess(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [postSuccess]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         // 5MB limit
-        alert("Image size should be less than 5MB");
+        toast.error("Image size should be less than 5MB");
         return;
       }
       setImage(file);
@@ -67,36 +80,58 @@ const PostForm = ({ onSubmit, isLoading }) => {
     setPreview("");
   };
 
+  const resetAllState = () => {
+    resetForm();
+    setImage(null);
+    setPreview("");
+    setCharCount(0);
+    setValue("content", ""); // Explicitly reset the content field
+  };
+
   const createPostMutation = useMutation({
     mutationFn: postAPI.createPost,
     onSuccess: () => {
+      // Show success feedback
+      toast.success("Post created successfully!");
+      setPostSuccess(true);
+
+      // Reset form and state
+      resetAllState();
+
+      // Refresh feed data
       queryClient.invalidateQueries({ queryKey: ["feed"] });
-      reset();
-      setImage(null);
-      setPreview("");
+      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+    },
+    onError: (error) => {
+      console.error("Error creating post:", error);
+      toast.error(error.response?.data?.message || "Failed to create post");
     },
   });
 
   const handleFormSubmit = (data) => {
     const formData = new FormData();
     formData.append("content", data.content);
+
+    // Specifically append image with key 'image' to match backend expectation
     if (image) {
       formData.append("image", image);
     }
 
     if (onSubmit) {
+      // Call onSubmit without chaining then/catch
       onSubmit(formData);
+
+      // Manually handle success state
+      resetAllState();
+      setPostSuccess(true);
+      toast.success("Post created successfully!");
     } else {
       createPostMutation.mutate(formData);
     }
   };
 
-  const isSubmitting = isLoading || createPostMutation.isLoading;
+  const isSubmitting = externalLoading || createPostMutation.isLoading;
   const hasContent = getValues("content")?.trim().length > 0 || image;
-
-  const contentProps = register("content", {
-    onChange: (e) => setCharCount(e.target.value.length),
-  });
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -108,13 +143,6 @@ const PostForm = ({ onSubmit, isLoading }) => {
       // Only submit if there's content
       if (content && content.trim().length > 0) {
         handleSubmit(handleFormSubmit)(e);
-
-        // Reset the form after submission
-        reset();
-        setCharCount(0);
-
-        // Unfocus the textarea
-        e.target.blur();
       }
     }
   };
@@ -140,7 +168,6 @@ const PostForm = ({ onSubmit, isLoading }) => {
                 } rounded-xl p-4 pt-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 dark:text-white transition-colors resize-none`}
                 placeholder="What's on your mind?"
                 rows="3"
-                {...contentProps}
                 onKeyDown={handleKeyDown}
                 {...register("content", {
                   onChange: (e) => setCharCount(e.target.value.length),
@@ -198,6 +225,12 @@ const PostForm = ({ onSubmit, isLoading }) => {
                   />
                 </label>
               </div>
+
+              {postSuccess && (
+                <div className="text-green-500 dark:text-green-400 animate-pulse mr-3">
+                  Posted successfully!
+                </div>
+              )}
 
               <Button
                 type="submit"
