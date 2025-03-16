@@ -592,6 +592,16 @@ const MessageBubble = ({
     }, 200);
   }, []);
 
+  const handleMouseClick = useCallback(() => {
+    if (isOwnMessage) {
+      if (showOptions) {
+        setShowOptions(false);
+      } else {
+        setShowOptions(true);
+      }
+    }
+  });
+
   const formattedTime = message.createdAt
     ? format(new Date(message.createdAt), "p")
     : "";
@@ -625,6 +635,7 @@ const MessageBubble = ({
           }`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onClick={handleMouseClick}
         >
           {/* Edit/delete options in top right corner */}
           {isOwnMessage && showOptions && (

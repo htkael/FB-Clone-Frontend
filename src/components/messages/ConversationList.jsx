@@ -1,4 +1,3 @@
-// Optimized ConversationList component to be more compact on small screens
 import { useEffect } from "react";
 import { useMessaging } from "../../context/MessagingContext";
 import { useSocket } from "../../context/SocketContext";
@@ -8,7 +7,6 @@ import Badge from "../common/Badge";
 import { format } from "date-fns";
 import { truncateText } from "../../utils/stringUtils";
 
-// Import icons
 import {
   ChatBubbleLeftRightIcon,
   UserGroupIcon,
@@ -28,13 +26,12 @@ const ConversationList = ({ onSelectConversation }) => {
   const { isUserOnline } = useSocket();
   const { user } = useAuth();
 
-  // Refresh conversations periodically
   useEffect(() => {
     fetchConversations();
 
     const interval = setInterval(() => {
       fetchConversations();
-    }, 30000); // Every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [fetchConversations]);
@@ -68,7 +65,6 @@ const ConversationList = ({ onSelectConversation }) => {
               const isActive = activeConversation?.id === conversation.id;
               const unreadCount = unreadCounts[conversation.id] || 0;
 
-              // For group chats
               if (conversation.isGroup) {
                 return (
                   <GroupConversationItem
@@ -85,7 +81,6 @@ const ConversationList = ({ onSelectConversation }) => {
                 );
               }
 
-              // For direct messages - find the other participant
               const otherParticipant = conversation.participants.find(
                 (p) => p.user?.id !== parseInt(user?.id)
               )?.user;
@@ -111,8 +106,8 @@ const ConversationList = ({ onSelectConversation }) => {
                       <Avatar
                         src={otherParticipant.profilePicUrl}
                         alt={otherParticipant.username}
-                        size="sm" // Smaller on mobile
-                        className="sm:w-10 sm:h-10" // Explicit sizing for SM screens
+                        size="sm"
+                        className="sm:w-10 sm:h-10"
                         isOnline={isUserOnline(otherParticipant.id)}
                       />
                     </div>
@@ -149,7 +144,7 @@ const ConversationList = ({ onSelectConversation }) => {
                           }`}
                         >
                           {conversation.messages[0]
-                            ? truncateText(conversation.messages[0].content, 20) // Shorter on mobile
+                            ? truncateText(conversation.messages[0].content, 20)
                             : "No messages yet"}
                         </p>
 
@@ -157,7 +152,7 @@ const ConversationList = ({ onSelectConversation }) => {
                           <Badge
                             count={unreadCount}
                             variant="primary"
-                            size="xs" // Smaller badge on mobile
+                            size="xs"
                             className="ml-1 sm:ml-2"
                           />
                         )}
@@ -174,7 +169,6 @@ const ConversationList = ({ onSelectConversation }) => {
   );
 };
 
-// Optimized Group conversation item component
 const GroupConversationItem = ({
   conversation,
   isActive,
@@ -245,7 +239,7 @@ const GroupConversationItem = ({
               <Badge
                 count={unreadCount}
                 variant="primary"
-                size="xs" // Smaller badge on mobile
+                size="xs"
                 className="ml-1 sm:ml-2"
               />
             )}

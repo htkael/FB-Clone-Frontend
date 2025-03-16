@@ -7,7 +7,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import SettingsModal from "../components/settings/SettingsModal";
 import Skeleton from "../components/common/Skeleton";
 
-// Icons (assuming you're using Heroicons)
 import {
   ArrowPathIcon,
   AdjustmentsHorizontalIcon,
@@ -31,28 +30,25 @@ const Feed = () => {
     queryKey: ["feed", page],
     queryFn: async () => {
       const response = await postAPI.getUserFeed({ page });
-      console.log("response", response);
-      return response.data; // Make sure we're returning response.data here
+
+      return response.data;
     },
   });
 
   useEffect(() => {
     if (isSuccess && feedResponse) {
-      const newPosts = feedResponse.data || []; // Get the posts array from data property
+      const newPosts = feedResponse.data || [];
 
       if (page === 1) {
         setAllPosts(newPosts);
       } else {
         setAllPosts((prevPosts) => {
-          // Create a set of IDs from new posts for efficient lookup
           const newPostIds = new Set(newPosts.map((post) => post.id));
 
-          // Filter out any posts that might be duplicates
           const filteredPrevPosts = prevPosts.filter(
             (post) => !newPostIds.has(post.id)
           );
 
-          // Combine previous posts with new ones
           return [...filteredPrevPosts, ...newPosts];
         });
       }
@@ -132,17 +128,10 @@ const Feed = () => {
   };
 
   const handleRefresh = () => {
-    setPage(1); // Reset to first page
-    setAllPosts([]); // Clear current posts
-    refetch(); // Refetch the data
+    setPage(1);
+    setAllPosts([]);
+    refetch();
   };
-
-  // Debug logging to help identify issues
-  useEffect(() => {
-    console.log("Page:", page);
-    console.log("hasNext:", feedResponse?.meta?.hasNext);
-    console.log("All posts count:", allPosts.length);
-  }, [page, feedResponse, allPosts]);
 
   return (
     <MainLayout openModal={openSettingsModal}>

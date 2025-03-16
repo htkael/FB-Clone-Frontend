@@ -19,19 +19,19 @@ const NotificationItem = ({ notification }) => {
   // Get the appropriate icon and color based on notification type
   const getIconDetails = () => {
     switch (type) {
-      case "post_like":
+      case "LIKE":
         return {
           icon: HeartIcon,
           color: "text-red-500 dark:text-red-400",
           bgColor: "bg-red-100 dark:bg-red-900/30",
         };
-      case "post_comment":
+      case "COMMENT":
         return {
           icon: ChatBubbleLeftIcon,
           color: "text-blue-500 dark:text-blue-400",
           bgColor: "bg-blue-100 dark:bg-blue-900/30",
         };
-      case "friend_request":
+      case "FRIEND_REQUEST":
         return {
           icon: UserPlusIcon,
           color: "text-green-500 dark:text-green-400",
@@ -72,15 +72,11 @@ const NotificationItem = ({ notification }) => {
 
     // Otherwise, determine by type
     switch (type) {
-      case "post_like":
-      case "post_comment":
-        // Assuming there's a post ID in the notification object
-        return notification.postId ? `/post/${notification.postId}` : "#";
-      case "friend_request":
-      case "friend_accepted":
+      case "FRIEND_REQUEST":
+      case "FRIEND_ACCEPTED":
         // Direct to user profile if available
         return fromUser ? `/profile/${fromUser.id}` : "#";
-      case "message":
+      case "MESSAGE":
         // Direct to messages with this user if available
         return fromUser ? `/messages/${fromUser.id}` : "/messages";
       default:

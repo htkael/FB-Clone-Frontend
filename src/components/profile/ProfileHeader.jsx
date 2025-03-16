@@ -113,7 +113,7 @@ const ProfileHeader = ({ user, firstName, lastName, username }) => {
       </div>
 
       {/* Profile Picture */}
-      <Gravatar user={user} />
+      <Gravatar avatar={user} />
     </div>
   );
 };

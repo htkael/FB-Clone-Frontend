@@ -32,14 +32,26 @@ export const authAPI = {
 
 export const postAPI = {
   getPosts: () => api.get("/posts"),
-  createPost: (postData) => api.post("/posts", postData),
+  createPost: async (formData) => {
+    const response = await api.post("/posts", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log(response);
+  },
   getComments: (postId) => api.get(`/posts/${postId}/comments`),
   postComment: (postId, content) =>
     api.post(`/posts/${postId}/comments`, content),
   likePost: (postId) => api.post(`/posts/${postId}/likes`),
   getLikes: (postId) => api.get(`/posts/${postId}/likes`),
   getPost: (postId) => api.get(`/posts/${postId}`),
-  editPost: (postId, content) => api.put(`/posts/${postId}`, content),
+  editPost: (postId, formData) =>
+    api.put(`/posts/${postId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
   deletePost: (postId) => api.delete(`/posts/${postId}`),
   getUserFeed: (params = {}) => api.get("/feed", { params }),
 };
