@@ -24,13 +24,12 @@ const FriendButton = ({
     page
   );
 
-  // Fetch pending friend requests to get requestId if needed
   const { data: pendingRequests } = useQuery({
     queryKey: ["friend-requests", "pending"],
     queryFn: friendAPI.getRequests,
     select: (response) => response.data.data,
-    enabled: friendshipStatus === "PENDING", // Only fetch when we have a pending request
-    staleTime: 60000, // 1 minute
+    enabled: friendshipStatus === "PENDING",
+    staleTime: 60000,
   });
 
   useEffect(() => {

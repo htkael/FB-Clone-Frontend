@@ -8,7 +8,6 @@ import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import SettingsModal from "../components/settings/SettingsModal";
 
-// Import icons
 import {
   ChatBubbleLeftRightIcon,
   PencilSquareIcon,
@@ -26,23 +25,18 @@ const MessagingPage = () => {
   const [showConversationList, setShowConversationList] = useState(true);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  // Check for mobile view on mount and window resize
   useEffect(() => {
     const checkMobileView = () => {
       setIsMobileView(window.innerWidth < 768);
     };
 
-    // Initial check
     checkMobileView();
 
-    // Add event listener for window resize
     window.addEventListener("resize", checkMobileView);
 
-    // Cleanup
     return () => window.removeEventListener("resize", checkMobileView);
   }, []);
 
-  // When a conversation is selected on mobile, hide the conversation list
   const handleConversationSelect = (conversation) => {
     setActiveConversation(conversation);
     if (isMobileView) {
@@ -50,7 +44,6 @@ const MessagingPage = () => {
     }
   };
 
-  // Go back to conversation list on mobile
   const handleBackToList = () => {
     setShowConversationList(true);
   };

@@ -20,14 +20,12 @@ const Input = forwardRef(
     },
     ref
   ) => {
-    // Size classes
     const sizeClasses = {
       sm: "px-2 py-1.5 text-xs",
       md: "px-3 py-2 text-sm",
       lg: "px-4 py-3 text-base",
     };
 
-    // Disabled state
     const disabledStyles = disabled
       ? "bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
       : "";
@@ -116,7 +114,6 @@ const Input = forwardRef(
   }
 );
 
-// Display name for debugging in React DevTools
 Input.displayName = "Input";
 
 export default Input;

@@ -7,9 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Avatar from "../common/Avatar";
 import Button from "../common/Button";
-import toast from "react-hot-toast"; // Make sure you have this installed
+import toast from "react-hot-toast";
 
-// Import icons
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const postSchema = z.object({
@@ -40,15 +39,12 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
     mode: "onChange",
   });
 
-  // Watch content to update character count
   const contentValue = watch("content");
 
-  // Update character count when content changes
   useEffect(() => {
     setCharCount(contentValue?.length || 0);
   }, [contentValue]);
 
-  // Reset state after successful posting (with a slight delay for better UX)
   useEffect(() => {
     if (postSuccess) {
       const timer = setTimeout(() => {
@@ -62,7 +58,6 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
         toast.error("Image size should be less than 5MB");
         return;
       }
@@ -85,20 +80,17 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
     setImage(null);
     setPreview("");
     setCharCount(0);
-    setValue("content", ""); // Explicitly reset the content field
+    setValue("content", "");
   };
 
   const createPostMutation = useMutation({
     mutationFn: postAPI.createPost,
     onSuccess: () => {
-      // Show success feedback
       toast.success("Post created successfully!");
       setPostSuccess(true);
 
-      // Reset form and state
       resetAllState();
 
-      // Refresh feed data
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["user-posts"] });
     },
@@ -112,16 +104,13 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
     const formData = new FormData();
     formData.append("content", data.content);
 
-    // Specifically append image with key 'image' to match backend expectation
     if (image) {
       formData.append("image", image);
     }
 
     if (onSubmit) {
-      // Call onSubmit without chaining then/catch
       onSubmit(formData);
 
-      // Manually handle success state
       resetAllState();
       setPostSuccess(true);
       toast.success("Post created successfully!");
@@ -137,10 +126,8 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
 
-      // Get current content
       const content = getValues("content");
 
-      // Only submit if there's content
       if (content && content.trim().length > 0) {
         handleSubmit(handleFormSubmit)(e);
       }

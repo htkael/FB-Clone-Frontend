@@ -42,7 +42,6 @@ function messagingReducer(state, action) {
     case "FETCH_MESSAGES_SUCCESS": {
       const { conversationId, messages, pagination } = action.payload;
 
-      // Ensure uniqueness by message ID
       const uniqueMessages = [
         ...new Map(messages.map((message) => [message.id, message])).values(),
       ];
@@ -227,13 +226,11 @@ export const MessagingProvider = ({ children }) => {
         });
         const conversationData = response.data.data;
 
-        // Update the conversation in the state
         dispatch({
           type: "UPDATE_CONVERSATION",
           payload: conversationData,
         });
 
-        // Store messages separately for easier access
         dispatch({
           type: "FETCH_MESSAGES_SUCCESS",
           payload: {
@@ -247,7 +244,6 @@ export const MessagingProvider = ({ children }) => {
       } catch (error) {
         console.error("Error fetching conversation:", error);
 
-        // CRITICAL FIX: Dispatch error action to reset loading state
         dispatch({
           type: "FETCH_MESSAGES_ERROR",
           payload: {
@@ -276,7 +272,6 @@ export const MessagingProvider = ({ children }) => {
         const newMessages = response.data.data.messages || [];
         const currentMessages = state.messages[conversationId] || [];
 
-        // Backend returns newest first, so append new (older) messages at the end
         dispatch({
           type: "FETCH_MESSAGES_SUCCESS",
           payload: {
@@ -349,7 +344,6 @@ export const MessagingProvider = ({ children }) => {
           title = options.title;
           isGroup = options.isGroup || false;
         } else {
-          // Legacy support for single recipient ID
           participantIds = [options];
         }
 
@@ -363,11 +357,10 @@ export const MessagingProvider = ({ children }) => {
           return null;
         }
 
-        // For direct messages, check if conversation already exists
         if (!isGroup && participantIds.length === 1) {
           const recipientId = participantIds[0];
           const existingConv = state.conversations.find((conv) => {
-            if (conv.isGroup) return false; // Skip group conversations
+            if (conv.isGroup) return false;
 
             return conv.participants.some(
               (p) => p.user && p.user.id === parseInt(recipientId)
@@ -380,19 +373,16 @@ export const MessagingProvider = ({ children }) => {
           }
         }
 
-        // Validate group chat requirements
         if (isGroup && !title) {
           console.error("Group conversations require a title");
           return null;
         }
 
-        // Create new conversation
         const payload = {
           participants: participantIds,
           isGroup,
         };
 
-        // Add title for group chats
         if (isGroup) {
           payload.title = title;
         }
@@ -402,13 +392,11 @@ export const MessagingProvider = ({ children }) => {
         const response = await conversationAPI.createConversation(payload);
         const newConversation = response.data.data;
 
-        // Add to state
         dispatch({
           type: "ADD_CONVERSATION",
           payload: newConversation,
         });
 
-        // Set as active
         setActiveConversation(newConversation);
 
         return newConversation;
@@ -488,16 +476,11 @@ export const MessagingProvider = ({ children }) => {
         headers: error.response?.headers,
       });
 
-      // Show user-friendly error
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         alert(error.response.data.message || "Failed to delete message");
       } else if (error.request) {
-        // The request was made but no response was received
         alert("No response received from server");
       } else {
-        // Something happened in setting up the request that triggered an Error
         alert("Error setting up the request");
       }
 
@@ -583,7 +566,6 @@ export const MessagingProvider = ({ children }) => {
     };
 
     const handleUserTyping = (data) => {
-      // Don't show typing indicator for own messages
       if (data.userId === parseInt(user.id)) return;
 
       dispatch({
@@ -608,7 +590,6 @@ export const MessagingProvider = ({ children }) => {
     socket.on("user:typing:stop", handleUserStoppedTyping);
     socket.on("message:read", handleMessageRead);
 
-    // Cleanup event listeners
     return () => {
       socket.off("message:new", handleNewMessage);
       socket.off("message:updated", handleMessageUpdated);
@@ -637,7 +618,6 @@ export const MessagingProvider = ({ children }) => {
       0
     );
   }, [state.unreadCounts]);
-  // console.log("State", state);
 
   return (
     <MessagingContext.Provider

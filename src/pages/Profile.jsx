@@ -19,7 +19,6 @@ import { formatDate } from "../utils/dateUtils";
 import SettingsModal from "../components/settings/SettingsModal";
 import RequestsList from "../components/profile/RequestsList";
 
-// Import icons (assuming you're using heroicons)
 import {
   DocumentTextIcon,
   PlusIcon,
@@ -38,7 +37,7 @@ const Profile = () => {
   const { user: currentUser } = useAuth();
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabFromUrl || "posts"); // Initialize with a default tab
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "posts");
   const observer = useRef(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -82,12 +81,11 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    // Update the active tab when the URL query parameter changes
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl) {
       setActiveTab(tabFromUrl);
     } else {
-      setActiveTab("posts"); // Default to posts if no tab is specified
+      setActiveTab("posts");
     }
   }, [searchParams]);
 
@@ -118,11 +116,9 @@ const Profile = () => {
     [handleObserver]
   );
 
-  // Correctly access the nested post data structure
   const allPosts = useMemo(() => {
     if (!postsData) return [];
 
-    // Extract all posts from all pages
     const allExtractedPosts = postsData.pages.flatMap((page) => {
       if (page.data && Array.isArray(page.data.data)) {
         return page.data.data;
@@ -130,7 +126,6 @@ const Profile = () => {
       return [];
     });
 
-    // Deduplicate based on post IDs
     const uniquePosts = [];
     const seenIds = new Set();
 
@@ -148,7 +143,6 @@ const Profile = () => {
     (post) => {
       if (!post) return null;
 
-      // Safely check for likes array
       const isLiked =
         post.likes?.some((like) => like.userId === parseInt(currentUser?.id)) ||
         false;
@@ -163,7 +157,6 @@ const Profile = () => {
     [currentUser?.id]
   );
 
-  // Filter out any null values that might result from formatPostForDisplay
   const displayPosts = useMemo(() => {
     return allPosts.map(formatPostForDisplay).filter((post) => post !== null);
   }, [allPosts, formatPostForDisplay]);
@@ -181,7 +174,6 @@ const Profile = () => {
 
   console.log("postData", postsData);
 
-  // Determine if this is the current user's profile
   const isOwnProfile = parseInt(currentUser?.id) === parseInt(userId);
 
   const openSettingsModal = () => {
@@ -307,7 +299,6 @@ const Profile = () => {
                       ) : displayPosts.length > 0 ? (
                         <div className="space-y-0 divide-y divide-gray-200 dark:divide-gray-700">
                           {displayPosts.map((post, index) => {
-                            // Ensure a unique key with string conversion
                             const postKey = post.id
                               ? `post-id-${post.id}`
                               : `post-index-${index}`;

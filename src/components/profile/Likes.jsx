@@ -7,7 +7,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useCallback } from "react";
 import Skeleton from "../common/Skeleton";
 
-// Import icons
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 
@@ -30,7 +29,6 @@ const Likes = ({ userProfile }) => {
     (post) => {
       if (!post) return null;
 
-      // Safely check for likes array
       const isLiked =
         post.likes?.some(
           (like) => like.user?.id === parseInt(currentUser?.id)
@@ -46,11 +44,9 @@ const Likes = ({ userProfile }) => {
     [currentUser?.id]
   );
 
-  // Only process data if it exists
   const displayPosts = data
     ? data
         .map((like) => {
-          // Check if the like has a post property
           if (like.post) {
             return {
               ...formatPostForDisplay(like.post),

@@ -2,7 +2,6 @@ import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import Avatar from "../common/Avatar";
 
-// Import icons
 import {
   HeartIcon,
   ChatBubbleLeftIcon,
@@ -17,7 +16,6 @@ const NotificationItem = ({ notification }) => {
   const { type, content, createdAt, fromUser, isRead, link } = notification;
   console.log("notification", notification);
 
-  // Get the appropriate icon and color based on notification type
   const getIconDetails = () => {
     switch (type) {
       case "LIKE":
@@ -61,24 +59,18 @@ const NotificationItem = ({ notification }) => {
 
   const { icon: IconComponent, color, bgColor } = getIconDetails();
 
-  // Format the time
   const formattedTime = formatDistanceToNow(new Date(createdAt), {
     addSuffix: true,
   });
 
-  // Generate appropriate destination link
   const getDestinationLink = () => {
-    // If link is provided directly, use it
     if (link) return link;
 
-    // Otherwise, determine by type
     switch (type) {
       case "FRIEND_REQUEST":
       case "friend_accepted":
-        // Direct to user profile if available
         return fromUser ? `/profile/${fromUser.id}` : "#";
       case "message":
-        // Direct to messages with this user if available
         return fromUser ? `/messages/${fromUser.id}` : "/messages";
       default:
         return "#";

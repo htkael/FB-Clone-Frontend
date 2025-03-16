@@ -13,7 +13,6 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  // Sidebar navigation items
   const navigation = [
     { name: "Feed", href: "/feed", icon: HomeIcon },
     {
@@ -30,13 +29,10 @@ const Sidebar = () => {
     { name: "Users", href: "/users", icon: UsersIcon },
   ];
 
-  // Check if the current path matches a navigation item
   const isActive = (href) => {
-    // Get the current path and query
     const currentPathname = location.pathname;
     const currentSearch = location.search;
 
-    // For the friends tab in profile
     if (href.includes("?tab=friends")) {
       return (
         currentPathname.startsWith(`/profile/`) &&
@@ -44,16 +40,13 @@ const Sidebar = () => {
       );
     }
 
-    // For the regular profile tab
     if (href === `/profile/${user?.id}` && !href.includes("?")) {
-      // This is active if we're on the profile page and NOT viewing the friends tab
       return (
         currentPathname === `/profile/${user?.id}` &&
         !currentSearch.includes("tab=friends")
       );
     }
 
-    // For other paths
     return currentPathname === href;
   };
 

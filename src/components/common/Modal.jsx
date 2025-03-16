@@ -14,7 +14,6 @@ const Modal = ({
 }) => {
   const modalRef = useRef(null);
 
-  // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -24,16 +23,15 @@ const Modal = ({
 
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "auto"; // Restore scrolling
+      document.body.style.overflow = "auto";
     };
   }, [isOpen, onClose]);
 
-  // Handle click outside of modal to close
   const handleOverlayClick = (event) => {
     if (
       closeOnClickOutside &&
@@ -44,12 +42,10 @@ const Modal = ({
     }
   };
 
-  // Animation classes
   const animationClasses = isOpen
     ? "opacity-100 scale-100"
     : "opacity-0 scale-95";
 
-  // Determine modal width based on size prop
   const sizeClass = {
     xs: "max-w-xs",
     sm: "max-w-md",

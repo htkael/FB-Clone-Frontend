@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 
-// Import icons
 import {
   EnvelopeIcon,
   LockClosedIcon,
@@ -106,7 +105,6 @@ const Login = () => {
     }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

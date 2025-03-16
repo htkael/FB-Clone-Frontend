@@ -16,7 +16,6 @@ const Header = ({ openModal }) => {
       }
     }
 
-    // Only add the listener when the menu is open
     if (userMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }

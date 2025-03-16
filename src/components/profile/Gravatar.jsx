@@ -13,7 +13,6 @@ const Gravatar = ({ avatar }) => {
   const isOwnProfile = user.id === avatar.id;
 
   useEffect(() => {
-    // Initialize after component is mounted
     const editor = new GravatarQuickEditor({
       email: email,
       editorTriggerSelector: `#edit-profile-${avatar.id}`,
@@ -23,12 +22,10 @@ const Gravatar = ({ avatar }) => {
 
     console.log("editor initialized", editor);
 
-    // Cleanup function
     return () => {
-      // Add cleanup here if GravatarQuickEditor provides a cleanup method
       console.log("editor cleanup");
     };
-  }, [email, avatar]); // Re-initialize if email changes
+  }, [email, avatar]);
 
   return (
     <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-16">
@@ -39,11 +36,11 @@ const Gravatar = ({ avatar }) => {
           size="xxl"
           isOnline={isOnline}
           className="border-4 border-white dark:border-gray-800 shadow-lg"
-          id={`gravatar-avatar-${avatar.id}`} // Keep the ID as the library expects it
+          id={`gravatar-avatar-${avatar.id}`}
         />
         {isOwnProfile && (
           <button
-            id={`edit-profile-${avatar.id}`} // Keep the ID as the library expects it
+            id={`edit-profile-${avatar.id}`}
             className="absolute top-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-md transition-colors"
           >
             <svg

@@ -6,7 +6,6 @@ import { useSocket } from "../../context/SocketContext";
 import Avatar from "../common/Avatar";
 import Button from "../common/Button";
 
-// Import icons
 import {
   UserPlusIcon,
   UserIcon,
@@ -21,7 +20,6 @@ const UserCard = ({ user, page }) => {
 
   const isOnline = isUserOnline?.(user.id);
 
-  // Handle friend request sending
   const sendFriendRequestMutation = useMutation({
     mutationFn: async () => {
       const response = await friendAPI.sendRequest(user.id);

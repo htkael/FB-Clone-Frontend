@@ -10,7 +10,6 @@ import { useAuth } from "../context/AuthContext";
 import FeedFriendsList from "../components/feed/FeedFriendsList";
 import FeedLayout from "../components/layout/FeedLayout";
 
-// Icons (assuming you're using Heroicons)
 import {
   ArrowPathIcon,
   AdjustmentsHorizontalIcon,
@@ -23,8 +22,6 @@ const Feed = () => {
   const loader = useRef(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { user } = useAuth();
-
-  // Format the user profile data for the FriendsList component
 
   const {
     data: feedResponse,

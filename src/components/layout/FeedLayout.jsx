@@ -19,7 +19,6 @@ const FeedLayout = ({ children, openModal }) => {
         <Sidebar />
         <AnimatedLayout>
           <main className="flex-1 py-6 px-4 sm:px-6 md:px-8 w-full overflow-y-auto xs:py-2 ">
-            {/* Removed max-w-7xl and inner div with max-w-6xl to allow custom layout in Feed */}
             {children}
           </main>
         </AnimatedLayout>

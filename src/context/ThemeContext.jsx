@@ -3,13 +3,12 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // Check if user has a saved preference, otherwise use system preference
   const getInitialTheme = () => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
       return savedTheme;
     }
-    // Check system preference
+
     if (
       window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -30,7 +29,6 @@ export const ThemeProvider = ({ children }) => {
     });
   };
 
-  // Apply theme to document when it changes
   useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);

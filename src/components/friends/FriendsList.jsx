@@ -6,7 +6,6 @@ import Avatar from "../common/Avatar";
 import Skeleton from "../common/Skeleton";
 import { useAuth } from "../../context/AuthContext";
 
-// Import icons (assuming you're using heroicons)
 import {
   UserGroupIcon,
   UserIcon,

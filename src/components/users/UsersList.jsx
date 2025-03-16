@@ -3,14 +3,12 @@ import UserCard from "./UserCard";
 import { useAuth } from "../../context/AuthContext";
 import Skeleton from "../common/Skeleton";
 
-// Import icons
 import { UsersIcon } from "@heroicons/react/24/outline";
 
 const UsersList = ({ page, data, setPage, isLoading, isFetching }) => {
   const loader = useRef(null);
   const currentUser = useAuth().user;
 
-  // Check if data exists and has the expected structure
   const users = data || [];
 
   const handleObserver = useCallback(
@@ -48,7 +46,6 @@ const UsersList = ({ page, data, setPage, isLoading, isFetching }) => {
     };
   }, [handleObserver]);
 
-  // Filter out current user from the list
   const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
 
   if (filteredUsers.length === 0 && !isFetching && !isLoading) {

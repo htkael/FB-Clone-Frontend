@@ -8,9 +8,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Avatar from "../common/Avatar";
-import toast from "react-hot-toast"; // Assuming you're using react-hot-toast
+import toast from "react-hot-toast";
 
-// Import icons
 import {
   HeartIcon,
   ChatBubbleLeftIcon,
@@ -44,7 +43,6 @@ const PostCard = ({ post }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Check if the current user is the author of the post
   const isAuthor = user?.id === post.author.id;
 
   const {
@@ -60,7 +58,6 @@ const PostCard = ({ post }) => {
     },
   });
 
-  // Edit post form
   const {
     register: registerEdit,
     handleSubmit: handleSubmitEdit,
@@ -78,7 +75,6 @@ const PostCard = ({ post }) => {
     addSuffix: true,
   });
 
-  // Like mutation
   const likeMutation = useMutation({
     mutationFn: () => postAPI.likePost(post.id),
     onSuccess: () => {
@@ -87,7 +83,6 @@ const PostCard = ({ post }) => {
     },
   });
 
-  // Comment mutation
   const commentMutation = useMutation({
     mutationFn: (data) => postAPI.postComment(post.id, data),
     onSuccess: () => {
@@ -149,7 +144,6 @@ const PostCard = ({ post }) => {
     const formData = new FormData();
     formData.append("content", data.content);
 
-    // Handle image deletion
     if (removeCurrentImage) {
       formData.append("removeImage", "true");
     }
@@ -170,11 +164,10 @@ const PostCard = ({ post }) => {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setValue("content", post.content); // Reset to original content
+    setValue("content", post.content);
     resetEditState();
   };
 
-  // Check if we should display the image in edit mode
   const showImageInEditMode = post.imageUrl && !removeCurrentImage;
 
   return (

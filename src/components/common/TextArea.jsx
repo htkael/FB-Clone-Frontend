@@ -20,7 +20,6 @@ const TextArea = forwardRef(
   ) => {
     const [charCount, setCharCount] = React.useState(props.value?.length || 0);
 
-    // Handle character count when typing
     const handleChange = (e) => {
       setCharCount(e.target.value.length);
       if (props.onChange) {
@@ -28,7 +27,6 @@ const TextArea = forwardRef(
       }
     };
 
-    // Disabled state
     const disabledStyles = disabled
       ? "bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
       : "bg-white dark:bg-gray-900";
@@ -125,7 +123,6 @@ const TextArea = forwardRef(
   }
 );
 
-// Display name for debugging in React DevTools
 TextArea.displayName = "TextArea";
 
 export default TextArea;

@@ -1,4 +1,3 @@
-// src/pages/NotFound.jsx
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HomeIcon } from "@heroicons/react/24/outline";

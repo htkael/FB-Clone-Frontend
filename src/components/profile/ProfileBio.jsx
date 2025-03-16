@@ -4,7 +4,6 @@ import { userAPI } from "../../services/api";
 import Button from "../common/Button";
 import TextArea from "../common/TextArea";
 
-// Import icons (assuming you're using heroicons)
 import { PencilIcon, UserIcon } from "@heroicons/react/24/outline";
 
 const ProfileBio = ({ bio, userId, isOwnProfile }) => {

@@ -17,17 +17,14 @@ const Skeleton = ({
   animation = "pulse",
   withShimmer = false,
 }) => {
-  // Base classes
   let classes = `bg-gray-200 dark:bg-gray-700 ${className}`;
 
-  // Add animation
   if (animation === "pulse") {
     classes += " animate-pulse";
   } else if (animation === "wave") {
     classes += " animate-[skeleton-wave_1.8s_ease-in-out_0.5s_infinite]";
   }
 
-  // Add variant-specific classes
   if (variant === "rectangular") {
     classes += " rounded";
   } else if (variant === "circular") {
@@ -36,7 +33,7 @@ const Skeleton = ({
     classes += " rounded h-4";
   } else if (variant === "avatar") {
     classes += " rounded-full";
-    height = height || width; // Make height equal to width if not specified
+    height = height || width;
   }
 
   const style = {
@@ -113,9 +110,6 @@ Skeleton.Avatar = ({
   );
 };
 
-/**
- * Skeleton Card component for content card placeholders
- */
 Skeleton.Card = ({
   height = "16rem",
   className = "",

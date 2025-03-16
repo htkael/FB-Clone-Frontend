@@ -9,7 +9,6 @@ import ErrorFallback from "../components/common/ErrorFallback";
 import SettingsModal from "../components/settings/SettingsModal";
 import Skeleton from "../components/common/Skeleton";
 
-// Import icons
 import { UsersIcon } from "@heroicons/react/24/outline";
 
 const Users = () => {
@@ -34,10 +33,8 @@ const Users = () => {
   useEffect(() => {
     if (isSuccess && data?.data) {
       if (page === 1) {
-        // Reset users list when filters change (page goes back to 1)
         setAllUsers(data.data.data || []);
       } else {
-        // Append new users for subsequent pages
         setAllUsers((prevUsers) => [...prevUsers, ...(data.data.data || [])]);
       }
     }

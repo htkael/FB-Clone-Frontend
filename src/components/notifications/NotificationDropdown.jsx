@@ -3,7 +3,6 @@ import { useNotifications } from "../../context/NotificationContext";
 import NotificationItem from "./NotificationItem";
 import { useOnClickOutside } from "../../hooks/useOnClickOutside";
 
-// Import icons
 import {
   BellIcon,
   TrashIcon,
@@ -103,7 +102,6 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {notifications.map((notification, index) => {
-              // Apply the ref to the last notification item
               if (index === notifications.length - 1) {
                 return (
                   <div ref={lastNotificationRef} key={notification.id}>

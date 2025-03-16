@@ -112,15 +112,12 @@ export const SocketProvider = ({ children }) => {
 
   const isUserOnline = useCallback(
     (userId) => {
-      // Check if userId is defined and convert to string if needed
       if (userId === undefined || userId === null) {
         return false;
       }
 
-      // Ensure userId is a string for consistent comparison
       const userIdStr = userId.toString();
 
-      // Check if the user is in the onlineUsers object - return true if they ARE in the object
       return Boolean(onlineUsers[userIdStr]);
     },
     [onlineUsers]

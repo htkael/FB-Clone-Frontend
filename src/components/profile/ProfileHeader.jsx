@@ -21,7 +21,6 @@ const ProfileHeader = ({ user, firstName, lastName, username }) => {
 
   return (
     <div className="relative mb-20">
-      {/* Cover Design (SVG Pattern) */}
       <div className="h-48 md:h-64 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -81,21 +80,17 @@ const ProfileHeader = ({ user, firstName, lastName, username }) => {
             </filter>
           </defs>
 
-          {/* Base pattern */}
           <rect
             width="100%"
             height="100%"
             fill={`url(#${coverPattern.patternId})`}
           />
 
-          {/* Overlay gradient */}
           <rect width="100%" height="100%" fill="url(#headerGradient)" />
 
-          {/* Decorative elements */}
           <circle cx="15%" cy="30%" r="50" fill="white" fillOpacity="0.05" />
           <circle cx="85%" cy="70%" r="70" fill="white" fillOpacity="0.05" />
 
-          {/* Bottom gradient for better text overlay */}
           <linearGradient id="bottomFade" x1="0%" y1="70%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="black" stopOpacity="0" />
             <stop offset="100%" stopColor="black" stopOpacity="0.3" />
@@ -103,7 +98,6 @@ const ProfileHeader = ({ user, firstName, lastName, username }) => {
           <rect width="100%" height="100%" fill="url(#bottomFade)" />
         </svg>
 
-        {/* Optional: Username display on the cover */}
         <div className="absolute bottom-3 left-4 text-white">
           <div className="text-lg font-medium drop-shadow-md">
             {firstName} {lastName}
@@ -112,7 +106,6 @@ const ProfileHeader = ({ user, firstName, lastName, username }) => {
         </div>
       </div>
 
-      {/* Profile Picture */}
       <Gravatar avatar={user} />
     </div>
   );

@@ -25,7 +25,6 @@ const Badge = ({ count, className = "", size = "md", variant = "danger" }) => {
       "bg-gray-500 dark:bg-gray-600 text-white shadow-sm shadow-gray-500/20 dark:shadow-gray-600/20",
   };
 
-  // Format the count display
   const displayCount = count > 99 ? "99+" : count;
 
   return (

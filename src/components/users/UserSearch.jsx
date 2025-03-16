@@ -3,7 +3,6 @@ import Button from "../common/Button";
 import Input from "../common/Input";
 import { useQueryClient } from "@tanstack/react-query";
 
-// Import icons
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const UserSearch = ({ filters, setFilters, page }) => {
@@ -11,7 +10,6 @@ const UserSearch = ({ filters, setFilters, page }) => {
   const [isSearching, setIsSearching] = useState(false);
   const queryClient = useQueryClient();
 
-  // Reset search term when filters are cleared externally
   useEffect(() => {
     if (!filters) {
       setSearchTerm("");
@@ -22,9 +20,8 @@ const UserSearch = ({ filters, setFilters, page }) => {
     const searchUsers = async () => {
       if (searchTerm === "") return;
 
-      // Handle short search terms
       if (searchTerm.length < 2) {
-        return; // Don't clear filters, just exit
+        return;
       }
 
       setIsSearching(true);
