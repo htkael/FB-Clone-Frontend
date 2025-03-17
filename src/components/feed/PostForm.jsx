@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Avatar from "../common/Avatar";
 import Button from "../common/Button";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -56,11 +56,19 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    console.log("File selected:", file);
+
     if (file) {
+      console.log("File size:", file.size, "bytes");
+      console.log("Max size:", 5 * 1024 * 1024, "bytes");
+
       if (file.size > 5 * 1024 * 1024) {
+        console.log("File too large, showing toast");
         toast.error("Image size should be less than 5MB");
+        e.target.value = "";
         return;
       }
+
       setImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -136,6 +144,9 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
 
   return (
     <div>
+      {/* Add Toaster component here */}
+      <Toaster position="top-center" />
+
       <div className="flex items-start space-x-3">
         <div className="flex-shrink-0 mt-1">
           <Avatar

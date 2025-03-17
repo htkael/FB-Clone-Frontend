@@ -18,19 +18,19 @@ const NotificationItem = ({ notification }) => {
 
   const getIconDetails = () => {
     switch (type) {
-      case "LIKE":
+      case "post_like":
         return {
           icon: HeartIcon,
           color: "text-red-500 dark:text-red-400",
           bgColor: "bg-red-100 dark:bg-red-900/30",
         };
-      case "COMMENT":
+      case "post_comment":
         return {
           icon: ChatBubbleLeftIcon,
           color: "text-blue-500 dark:text-blue-400",
           bgColor: "bg-blue-100 dark:bg-blue-900/30",
         };
-      case "FRIEND_REQUEST":
+      case "friend_request":
         return {
           icon: UserPlusIcon,
           color: "text-green-500 dark:text-green-400",
@@ -43,6 +43,12 @@ const NotificationItem = ({ notification }) => {
           bgColor: "bg-green-100 dark:bg-green-900/30",
         };
       case "message":
+        return {
+          icon: EnvelopeIcon,
+          color: "text-purple-500 dark:text-purple-400",
+          bgColor: "bg-purple-100 dark:bg-purple-900/30",
+        };
+      case "new_conversation":
         return {
           icon: EnvelopeIcon,
           color: "text-purple-500 dark:text-purple-400",
@@ -67,11 +73,14 @@ const NotificationItem = ({ notification }) => {
     if (link) return link;
 
     switch (type) {
-      case "FRIEND_REQUEST":
+      case "friend_request":
+        return fromUser ? `/profile/${fromUser.id}` : "#";
       case "friend_accepted":
         return fromUser ? `/profile/${fromUser.id}` : "#";
       case "message":
-        return fromUser ? `/messages/${fromUser.id}` : "/feed";
+        return fromUser ? `/messages/` : "/feed";
+      case "new_conversation":
+        return fromUser ? `/messages/` : "/feed";
       default:
         return "#";
     }

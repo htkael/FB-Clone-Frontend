@@ -7,6 +7,7 @@ import Skeleton from "../common/Skeleton";
 import Avatar from "../common/Avatar";
 import { friendAPI } from "../../services/api";
 import FriendButton from "./FriendButton";
+import { useAuth } from "../../context/AuthContext";
 
 import {
   UserGroupIcon,
@@ -17,8 +18,7 @@ import {
 const RequestsList = ({ userProfile }) => {
   const userId = userProfile.data.id;
   const navigate = useNavigate();
-
-  console.log(userProfile);
+  const { user } = useAuth();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["requests", userId],
@@ -38,7 +38,6 @@ const RequestsList = ({ userProfile }) => {
       />
     );
   }
-  console.log("Requests", data);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 h-full">
@@ -63,19 +62,31 @@ const RequestsList = ({ userProfile }) => {
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {data.data.map((friend) => (
               <div
-                key={friend.id}
+                key={
+                  user.id === friend.user.id ? friend.friend.id : friend.user.id
+                }
                 className="grid grid-cols-2 gap-4 items-center "
               >
                 <FriendListItem
-                  key={friend.friend.id}
-                  friend={friend.friend}
+                  key={
+                    user.id === friend.user.id
+                      ? friend.friend.id
+                      : friend.user.id
+                  }
+                  friend={
+                    user.id === friend.user.id ? friend.friend : friend.user
+                  }
                   friendshipId={friend.id}
                 />
                 <div className="p-2 grid  items-center justify-items-center ">
                   <FriendButton
                     isFriend={false}
                     friendshipStatus={friend.status}
-                    userId={friend.friend.id}
+                    userId={
+                      user.id === friend.user.id
+                        ? friend.friend.id
+                        : friend.user.id
+                    }
                   />
                 </div>
               </div>
