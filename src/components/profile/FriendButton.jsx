@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { friendAPI } from "../../services/api";
 import Button from "../common/Button";
 import { useAuth } from "../../context/AuthContext";
+import { CheckBadgeIcon } from "@heroicons/react/24/outline";
 
 const FriendButton = ({
   userId,
@@ -101,7 +102,10 @@ const FriendButton = ({
           variant="outline"
           size={size}
         >
-          Friends
+          <span className="text-blue-600 dark:text-blue-400 text-sm font-medium flex items-center">
+            <CheckBadgeIcon className="w-4 h-4 mr-1" />
+            Friends
+          </span>
         </Button>
       </div>
     );
