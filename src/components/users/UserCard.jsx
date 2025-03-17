@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSocket } from "../../context/SocketContext";
 import Avatar from "../common/Avatar";
 import Button from "../common/Button";
+import FriendButton from "../profile/FriendButton";
 
 import {
   UserPlusIcon,
@@ -130,15 +131,12 @@ const UserCard = ({ user, page }) => {
 
         {/* Pending request button - shown when request is pending */}
         {user.relationship?.friendshipStatus === "PENDING" && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            className="text-amber-500 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-          >
-            <ClockIcon className="w-4 h-4 mr-1.5" />
-            Pending
-          </Button>
+          <FriendButton
+            isFriend={false}
+            friendshipStatus={user.relationship?.friendshipStatus}
+            userId={user.id}
+            page={page}
+          />
         )}
       </div>
     </div>

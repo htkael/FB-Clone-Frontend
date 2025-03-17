@@ -60,7 +60,7 @@ const PostForm = ({ onSubmit, isLoading: externalLoading }) => {
 
     if (file) {
       console.log("File size:", file.size, "bytes");
-      console.log("Max size:", 5 * 1024 * 1024, "bytes");
+      console.log("Max size:", 15 * 1024 * 1024, "bytes");
 
       if (file.size > 5 * 1024 * 1024) {
         console.log("File too large, showing toast");
