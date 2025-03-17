@@ -77,9 +77,16 @@ const PostCard = ({ post }) => {
 
   const likeMutation = useMutation({
     mutationFn: () => postAPI.likePost(post.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+    onSuccess: async () => {
+      // Use Promise.all to ensure both queries are invalidated
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["feed"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-posts"] }),
+      ]);
+
+      // Force refetch to ensure data is actually refreshed
+      await queryClient.refetchQueries({ queryKey: ["feed"] });
+      await queryClient.refetchQueries({ queryKey: ["user-posts"] });
     },
   });
 
