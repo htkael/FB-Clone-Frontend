@@ -168,6 +168,11 @@ const PostCard = ({ post }) => {
     resetEditState();
   };
 
+  const queryFeed = () => {
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
+    queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+  };
+
   const showImageInEditMode = post.imageUrl && !removeCurrentImage;
 
   return (
@@ -175,6 +180,7 @@ const PostCard = ({ post }) => {
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      onClick={() => queryFeed()}
     >
       {/* Post header */}
       <div className="p-4 flex items-center space-x-3 relative">
