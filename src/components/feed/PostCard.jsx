@@ -133,7 +133,8 @@ const PostCard = ({ post }) => {
     },
   });
 
-  const handleLike = () => {
+  const handleLike = (e) => {
+    e.stopPropagation();
     likeMutation.mutate();
   };
 
