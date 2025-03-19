@@ -124,7 +124,7 @@ const ConversationList = ({ onSelectConversation }) => {
                           {otherParticipant.username}
                         </h3>
                         {/* Hide timestamp on very small screens */}
-                        {conversation.messages[0] && (
+                        {conversation?.messages[0] && (
                           <span className="hidden xs:flex text-xs text-gray-500 dark:text-gray-400 items-center ml-1">
                             <ClockIcon className="w-3 h-3 mr-1 inline" />
                             {format(

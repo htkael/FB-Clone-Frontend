@@ -75,73 +75,155 @@ const PostCard = ({ post, page }) => {
     addSuffix: true,
   });
 
+  // UPDATED: Force refetchQueries instead of invalidateQueries for iOS compatibility
   const likeMutation = useMutation({
     mutationFn: () => postAPI.likePost(post.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      // Force refetch all feed queries
+      queryClient.refetchQueries({
         queryKey: ["feed"],
         exact: false,
+        force: true,
       });
 
-      queryClient.invalidateQueries({
+      // Force refetch user posts
+      queryClient.refetchQueries({
         queryKey: ["user-posts"],
+        force: true,
       });
 
+      // Ensure the current page is updated
       setTimeout(() => {
         queryClient.refetchQueries({
           queryKey: ["feed", page],
           exact: true,
           force: true,
         });
-      }, 500);
+      }, 300);
+    },
+    onError: (error) => {
+      toast.error("Failed to update like status. Please try again.");
+      console.error("Like operation failed:", error);
     },
   });
 
+  // UPDATED: Force refetch for comment creation
   const commentMutation = useMutation({
     mutationFn: (data) => postAPI.postComment(post.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed", page] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      // Force refetch specific page to show new comment
+      queryClient.refetchQueries({
+        queryKey: ["feed", page],
+        force: true,
+      });
+
+      // Force refetch user posts
+      queryClient.refetchQueries({
+        queryKey: ["user-posts"],
+        force: true,
+      });
+
       reset();
+
+      // Auto-open comments when adding a new one
+      if (!showComments) {
+        setShowComments(true);
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to post comment. Please try again.");
+      console.error("Comment post failed:", error);
     },
   });
 
+  // UPDATED: Force refetch for comment deletion
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => commentAPI.deleteComment(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed", page] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      // Force refetch current feed page
+      queryClient.refetchQueries({
+        queryKey: ["feed", page],
+        force: true,
+      });
+
+      // Force refetch user posts
+      queryClient.refetchQueries({
+        queryKey: ["user-posts"],
+        force: true,
+      });
+
+      toast.success("Comment deleted successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to delete comment. Please try again.");
+      console.error("Comment deletion failed:", error);
     },
   });
 
+  // UPDATED: Force refetch for post deletion
   const deletePostMutation = useMutation({
     mutationFn: (postId) => postAPI.deletePost(postId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed", page] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      // Force refetch all feed queries
+      queryClient.refetchQueries({
+        queryKey: ["feed"],
+        exact: false,
+        force: true,
+      });
+
+      // Force refetch user posts
+      queryClient.refetchQueries({
+        queryKey: ["user-posts"],
+        force: true,
+      });
+
       toast.success("Post deleted successfully");
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to delete post");
+      console.error("Post deletion failed:", error);
     },
   });
 
+  // UPDATED: Force refetch for post editing
   const editPostMutation = useMutation({
     mutationFn: ({ postId, postData }) => postAPI.editPost(postId, postData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      // Force refetch all feed queries
+      queryClient.refetchQueries({
+        queryKey: ["feed"],
+        exact: false,
+        force: true,
+      });
+
+      // Force refetch user posts
+      queryClient.refetchQueries({
+        queryKey: ["user-posts"],
+        force: true,
+      });
+
       toast.success("Post updated successfully");
       setIsEditing(false);
       resetEditState();
+
+      // Ensure the current page is updated
+      setTimeout(() => {
+        queryClient.refetchQueries({
+          queryKey: ["feed", page],
+          exact: true,
+          force: true,
+        });
+      }, 300);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to update post");
+      console.error("Post edit failed:", error);
     },
   });
 
   const handleLike = (e) => {
     e.stopPropagation();
+    e.preventDefault(); // Prevent any parent clicks
     likeMutation.mutate();
   };
 
@@ -149,7 +231,10 @@ const PostCard = ({ post, page }) => {
     commentMutation.mutate({ content: data.content });
   };
 
-  const handleDeletePost = () => {
+  const handleDeletePost = (e) => {
+    e.stopPropagation(); // Stop propagation to prevent feed refresh
+    e.preventDefault();
+
     if (window.confirm("Are you sure you want to delete this post?")) {
       deletePostMutation.mutate(post.id);
     }
@@ -169,7 +254,8 @@ const PostCard = ({ post, page }) => {
     });
   };
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = (e) => {
+    e.stopPropagation(); // Stop propagation to prevent feed refresh
     setRemoveCurrentImage(true);
   };
 
@@ -177,15 +263,36 @@ const PostCard = ({ post, page }) => {
     setRemoveCurrentImage(false);
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (e) => {
+    e.stopPropagation(); // Stop propagation to prevent feed refresh
     setIsEditing(false);
     setValue("content", post.content);
     resetEditState();
   };
 
-  const queryFeed = () => {
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
-    queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+  // UPDATED: Use force refetch
+  const queryFeed = (e) => {
+    // Only perform the query if we're not inside a button or form element
+    if (e.target.closest("button") || e.target.closest("form")) {
+      return;
+    }
+
+    queryClient.refetchQueries({
+      queryKey: ["feed"],
+      exact: false,
+      force: true,
+    });
+
+    queryClient.refetchQueries({
+      queryKey: ["user-posts"],
+      force: true,
+    });
+  };
+
+  const toggleComments = (e) => {
+    e.stopPropagation(); // Stop propagation to prevent feed refresh
+    e.preventDefault();
+    setShowComments(!showComments);
   };
 
   const showImageInEditMode = post.imageUrl && !removeCurrentImage;
@@ -195,7 +302,7 @@ const PostCard = ({ post, page }) => {
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      onClick={() => queryFeed()}
+      onClick={queryFeed}
     >
       {/* Post header */}
       <div className="p-4 flex items-center space-x-3 relative">
@@ -227,7 +334,10 @@ const PostCard = ({ post, page }) => {
         {isAuthor && isHovering && !isEditing && (
           <div className="absolute top-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-md shadow-sm transition-opacity duration-200">
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
               className="p-1.5 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
               aria-label="Edit post"
             >
@@ -246,7 +356,7 @@ const PostCard = ({ post, page }) => {
 
       {/* Post content */}
       {isEditing ? (
-        <div className="px-4 pb-3">
+        <div className="px-4 pb-3" onClick={(e) => e.stopPropagation()}>
           <form onSubmit={handleSubmitEdit(handleEditSubmit)}>
             <div className="relative">
               <textarea
@@ -375,7 +485,7 @@ const PostCard = ({ post, page }) => {
         <div>
           {post.commentsCount > 0 && (
             <button
-              onClick={() => setShowComments(!showComments)}
+              onClick={toggleComments}
               className="text-gray-500 dark:text-gray-400 hover:underline"
             >
               {post.commentsCount}{" "}
@@ -407,7 +517,7 @@ const PostCard = ({ post, page }) => {
         </button>
 
         <button
-          onClick={() => setShowComments(!showComments)}
+          onClick={toggleComments}
           className="flex items-center justify-center py-2 px-4 space-x-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
         >
           <ChatBubbleLeftIcon className="h-5 w-5" />
@@ -417,7 +527,10 @@ const PostCard = ({ post, page }) => {
 
       {/* Comments section */}
       {showComments && (
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div
+          className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Comment form with React Hook Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}
