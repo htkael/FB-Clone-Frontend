@@ -1,4 +1,4 @@
-# Facebook Clone Frontend
+# Climbing Connection
 
 A comprehensive social media platform frontend built with React and Tailwind CSS, featuring a complete social experience including authentication, posts, comments, real-time messaging, and user connections.
 
