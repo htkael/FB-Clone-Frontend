@@ -35,7 +35,7 @@ const editPostSchema = z.object({
     .max(500, "Post cannot exceed 500 characters"),
 });
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, page }) => {
   const [showComments, setShowComments] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -78,22 +78,29 @@ const PostCard = ({ post }) => {
   const likeMutation = useMutation({
     mutationFn: () => postAPI.likePost(post.id),
     onSuccess: () => {
-      // Immediate invalidation
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["user-posts"] });
+      queryClient.invalidateQueries({
+        queryKey: ["feed"],
+        exact: false,
+      });
 
-      // Delayed forced refetch - this is key for iOS
+      queryClient.invalidateQueries({
+        queryKey: ["user-posts"],
+      });
+
       setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["feed"], force: true });
-        queryClient.refetchQueries({ queryKey: ["user-posts"], force: true });
-      }, 300); // Small delay helps iOS process the requests properly
+        queryClient.refetchQueries({
+          queryKey: ["feed", page],
+          exact: true,
+          force: true,
+        });
+      }, 500);
     },
   });
 
   const commentMutation = useMutation({
     mutationFn: (data) => postAPI.postComment(post.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["feed", page] });
       queryClient.invalidateQueries({ queryKey: ["user-posts"] });
       reset();
     },
@@ -102,7 +109,7 @@ const PostCard = ({ post }) => {
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => commentAPI.deleteComment(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["feed", page] });
       queryClient.invalidateQueries({ queryKey: ["user-posts"] });
     },
   });
@@ -110,7 +117,7 @@ const PostCard = ({ post }) => {
   const deletePostMutation = useMutation({
     mutationFn: (postId) => postAPI.deletePost(postId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["feed", page] });
       queryClient.invalidateQueries({ queryKey: ["user-posts"] });
       toast.success("Post deleted successfully");
     },

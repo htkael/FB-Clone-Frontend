@@ -244,7 +244,7 @@ const Feed = () => {
               {displayPosts.length > 0 && (
                 <>
                   {displayPosts.map((post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard key={post.id} post={post} page={page} />
                   ))}
                 </>
               )}
