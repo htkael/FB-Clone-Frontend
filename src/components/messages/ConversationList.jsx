@@ -22,6 +22,7 @@ const ConversationList = ({ onSelectConversation }) => {
     unreadCounts,
     fetchConversations,
   } = useMessaging();
+  console.log("Conversations", conversations);
 
   const { isUserOnline } = useSocket();
   const { user } = useAuth();
